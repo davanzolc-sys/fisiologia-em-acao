@@ -2,7 +2,8 @@
 // 1) a IA transforma a dúvida numa busca em inglês para o PubMed
 // 2) o site busca artigos reais (revisões e meta-análises primeiro) e lê os resumos
 // 3) a IA responde com base nesses artigos, citando [1], [2]...; os links são montados pelo código
-// Chaves (variáveis de ambiente no Netlify): GEMINI_API_KEY (grátis) ou ANTHROPIC_API_KEY (pago, opcional).
+// Chaves (variáveis no Netlify): GEMINI_API_KEY (grátis) ou CLAUDE_API_KEY (pago, opcional).
+// Obs.: não usar ANTHROPIC_API_KEY, porque o Netlify cria essa variável sozinho para o AI Gateway dele.
 
 const env = k => (globalThis.Netlify?.env?.get?.(k)) ?? (globalThis.Deno?.env?.get?.(k)) ?? (typeof process !== 'undefined' ? process.env[k] : undefined);
 const json = (o, status = 200) => new Response(JSON.stringify(o), {status, headers: {'Content-Type': 'application/json; charset=utf-8'}});
@@ -48,15 +49,16 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
 }
 async function claude(system, msgs, {max = 3000} = {}) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST', headers: {'Content-Type': 'application/json', 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01'},
-    body: JSON.stringify({model: env('ANTHROPIC_MODEL') || 'claude-sonnet-5-5', max_tokens: max, system, messages: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: m.text}))})
+    method: 'POST', headers: {'Content-Type': 'application/json', 'x-api-key': env('CLAUDE_API_KEY'), 'anthropic-version': '2023-06-01'},
+    body: JSON.stringify({model: env('CLAUDE_MODEL') || 'claude-sonnet-5-5', max_tokens: max, system, messages: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: m.text}))})
   });
   const j = await r.json().catch(() => ({}));
   if (r.status === 429) throw Object.assign(new Error('limite de uso atingido'), {status: 429});
   if (!r.ok) throw new Error(j.error?.message || 'erro no Claude');
   return (j.content || []).map(c => c.text || '').join('').trim();
 }
-const llm = (s, m, o) => env('ANTHROPIC_API_KEY') ? claude(s, m, o) : gemini(s, m, o);
+const useClaude = () => !!env('CLAUDE_API_KEY') && (!env('GEMINI_API_KEY') || env('IA') === 'claude');
+const llm = (s, m, o) => useClaude() ? claude(s, m, o) : gemini(s, m, o);
 
 // ---------- PubMed ----------
 const unent = s => s.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x?([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, /x/i.test(m) ? 16 : 10))).replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
@@ -92,7 +94,7 @@ async function pubmed(query) {
 export default async (req) => {
   if (req.method === 'GET') {
     // diagnóstico: /api/ia?teste=1
-    const info = {funcao: 'ok', gemini_key: !!env('GEMINI_API_KEY'), claude_key: !!env('ANTHROPIC_API_KEY'), modelo: env('ANTHROPIC_API_KEY') ? (env('ANTHROPIC_MODEL') || 'claude-sonnet-5-5') : (env('GEMINI_MODEL') || 'gemini-flash-latest')};
+    const info = {funcao: 'ok', gemini_key: !!env('GEMINI_API_KEY'), claude_key: !!env('CLAUDE_API_KEY'), modelo: useClaude() ? (env('CLAUDE_MODEL') || 'claude-sonnet-5-5') : (env('GEMINI_MODEL') || 'gemini-flash-latest')};
     if (new URL(req.url).searchParams.get('teste')) {
       try { info.ia = await llm('Responda só: ok', [{role: 'user', text: 'teste'}], {max: 50}) || '(vazio)'; } catch (e) { info.ia_erro = e.message; }
       try { info.pubmed = (await esearch('cardiovascular drift exercise', 2)).length + ' artigos'; } catch (e) { info.pubmed_erro = e.message; }
@@ -100,7 +102,7 @@ export default async (req) => {
     return json(info);
   }
   if (req.method !== 'POST') return json({error: 'Use POST'}, 405);
-  if (!env('GEMINI_API_KEY') && !env('ANTHROPIC_API_KEY')) return json({error: 'Chave da IA não configurada'}, 503);
+  if (!env('GEMINI_API_KEY') && !env('CLAUDE_API_KEY')) return json({error: 'Chave da IA não configurada'}, 503);
   let body; try { body = await req.json(); } catch { return json({error: 'Pedido inválido'}, 400); }
   const msgs = (Array.isArray(body.messages) ? body.messages : []).slice(-10)
     .filter(m => m && typeof m.text === 'string' && (m.role === 'user' || m.role === 'model')).map(m => ({role: m.role, text: m.text.slice(0, 2500)}));
