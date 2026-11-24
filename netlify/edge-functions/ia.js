@@ -32,20 +32,41 @@ const PLAN = `Você monta buscas para o PubMed. Leia a dúvida de um estudante d
 Use "buscar": false só para mensagens sem conteúdo científico (cumprimentos, agradecimentos, pedidos de quiz sobre algo já explicado).`;
 
 // ---------- provedores de IA ----------
+const busy = new Map(); // modelos sobrecarregados recentemente
 async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
-  const key = env('GEMINI_API_KEY'), model = env('GEMINI_MODEL') || 'gemini-flash-latest';
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key},
-    body: JSON.stringify({
-      systemInstruction: {parts: [{text: system}]},
-      contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
-      generationConfig: {temperature: jsonOut ? 0 : 0.35, maxOutputTokens: max, ...(jsonOut ? {responseMimeType: 'application/json'} : {})}
-    })
+  // tenta o modelo principal e, se estiver sobrecarregado ou sem cota, outros modelos do Gemini
+  const key = env('GEMINI_API_KEY');
+  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash'])];
+  const body = JSON.stringify({
+    systemInstruction: {parts: [{text: system}]},
+    contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
+    generationConfig: {temperature: jsonOut ? 0 : 0.35, maxOutputTokens: max, ...(jsonOut ? {responseMimeType: 'application/json'} : {})}
   });
-  const j = await r.json().catch(() => ({}));
-  if (r.status === 429) throw Object.assign(new Error('limite de uso atingido'), {status: 429});
-  if (!r.ok) throw new Error(j.error?.message || 'erro no Gemini');
-  return (j.candidates?.[0]?.content?.parts || []).filter(p => !p.thought).map(p => p.text || '').join('').trim();
+  let last = 'erro no Gemini', allQuota = true;
+  const order = [...models.filter(m => !(busy.get(m) > Date.now())), ...models.filter(m => busy.get(m) > Date.now())];
+  for (const model of order) {
+    for (let tent = 0; tent < 2; tent++) {
+      let r, j;
+      try {
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key}, body});
+        j = await r.json().catch(() => ({}));
+      } catch (e) { last = e.message; allQuota = false; await wait(700); continue; }
+      if (r.ok) {
+        const t = (j.candidates?.[0]?.content?.parts || []).filter(p => !p.thought).map(p => p.text || '').join('').trim();
+        if (t) return t;
+        last = 'resposta vazia'; allQuota = false; break;
+      }
+      last = j.error?.message || ('erro ' + r.status);
+      if (r.status === 429) break;                       // sem cota neste modelo: tenta o próximo
+      allQuota = false;
+      if (r.status === 404 || r.status === 400 && /model/i.test(last)) break; // modelo inexistente: próximo
+      if (r.status === 401 || r.status === 403 || r.status === 400) throw new Error(last); // chave/pedido inválido
+      if (tent === 1) busy.set(model, Date.now() + 120000);
+      await wait(900 * (tent + 1));                      // 500/503 sobrecarga: espera e tenta de novo
+    }
+  }
+  if (allQuota) throw Object.assign(new Error('limite de uso atingido'), {status: 429});
+  throw new Error(last);
 }
 async function claude(system, msgs, {max = 3000} = {}) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
