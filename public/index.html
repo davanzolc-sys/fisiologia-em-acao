@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fisiologia em Ação</title>
+<meta name="description" content="Laboratório interativo de fisiologia do exercício: veja coração, pulmões, músculos, hormônios, rins e temperatura respondendo a um treino, minuto a minuto.">
+<meta property="og:title" content="Fisiologia em Ação">
+<meta property="og:description" content="Laboratório interativo de fisiologia do exercício para estudar e dar aula.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#b5122b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 90C20 68 4 52 4 32C4 17 15 7 29 7C39 7 46 13 50 21C54 13 61 7 71 7C85 7 96 17 96 32C96 52 80 68 50 90Z' fill='%23b5122b'/%3E%3Cpath d='M14 46H34L41 30L52 62L59 46H86' stroke='white' stroke-width='7' fill='none' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* VOICE everyday learning tool, precise like a lab bench
+   IDEA a physiology lab during an exercise test: blood-flow readout, monitor figures, the "why" beside each number
+   PICTURE live Sankey of cardiac output leaving a beating heart; in other tabs the lab's own graphs (ramp test, VO2 kinetics, Hb curve)
+   COLOUR white ground, arterial red leading, venous blue, heat amber, plum for viscera; deep red band
+   TYPE Barlow Condensed for figures and titles + IBM Plex Sans for text
+   LAYOUT red band with title; sticky tab bar; each tab opens with its working graphic at the top. Phone: stacked, readouts sticky */
+:root{color-scheme:light dark;--bg:#ffffff;--ink:#1b1315;--mut:#6a5a5d;--line:#ecdcde;--line2:#dccbcd;--panel:#fbf4f4;--red:#b5122b;--red2:#7c0f22;--band:#9a0f24;--blue:#2d68b0;--amber:#d06a08;--plum:#7a4592;--ok:#1d7a46;--teal:#0e7a6d}
+@media(prefers-color-scheme:dark){:root{--bg:#140b0d;--ink:#f4eaeb;--mut:#b9a7aa;--line:#3b272a;--line2:#4a3437;--panel:#1e1215;--red:#ff5b70;--red2:#e0647a;--band:#3e0811;--blue:#74a6e8;--amber:#f5a24c;--plum:#c595da;--ok:#5fd18f;--teal:#4fd1bf}}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif;overflow-x:clip}
+.band{padding-block:clamp(20px,3vw,40px);padding-left:max(5vw,16px);padding-right:max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1,h2,h3,h4{font-family:"Barlow Condensed",sans-serif;letter-spacing:-.01em;line-height:1.05}
+h2{font-size:clamp(28px,3.2vw,38px);font-weight:700;margin:0 0 6px}
+h3{font-size:22px;font-weight:600;margin:0 0 6px}
+h4{font-size:19px;font-weight:600;margin:18px 0 6px}
+.sub{color:var(--mut);margin:0 0 16px;max-width:72ch}
+.note{font-size:13px;color:var(--mut);margin:8px 0 4px}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chips button{font:500 14px "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--bg);border:1.5px solid var(--line2);border-radius:999px;padding:0 14px;min-height:40px;cursor:pointer}
+.chips button:hover{border-color:var(--ink)}
+.chips button[aria-pressed=true]{background:var(--red);color:#fff;border-color:var(--red)}
+.main{display:grid;grid-template-columns:330px minmax(0,1fr);grid-template-areas:"ctl pic" "ctl read";grid-template-rows:auto 1fr;gap:16px 32px;align-items:start}
+.ctl{grid-area:ctl;display:grid;gap:14px}
+.ctl h4{margin:6px 0 -4px;padding-top:10px;border-top:1px solid var(--line)}
+.ctl h4:first-child{border:0;padding:0;margin-top:0}
+.pic{grid-area:pic}
+.read{grid-area:read;align-self:start}
+@media(min-width:761px){.pic{position:sticky;top:calc(var(--hh) + 8px)}.read{position:sticky;top:calc(var(--hh) + 384px)}}
+.field label{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-size:15px}
+.field output{font-weight:500;color:var(--red);white-space:nowrap}
+.field .hint{font-size:13px;color:var(--mut);margin-top:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:40px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--red) var(--f,50%),var(--line) var(--f,50%))}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--red) var(--f,50%),var(--line) var(--f,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--bg);border:3px solid var(--red);margin-top:-9px}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--bg);border:3px solid var(--red)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--line2);border-radius:10px;overflow:hidden}
+.seg button{font:500 15px "IBM Plex Sans",sans-serif;min-height:44px;padding:0 10px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:500 15px "IBM Plex Sans",sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.ghost{border-color:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.alab{font-size:13px;color:var(--mut);margin:0}
+.fig{position:relative;min-height:360px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.fig.sm{min-height:230px}
+.fig.md{min-height:300px}
+svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+.beat{transform-box:fill-box;transform-origin:center;animation:beat 1s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.07)}24%{transform:scale(.98)}}
+@media(prefers-reduced-motion:reduce){.beat{animation:none}}
+.ribbon{cursor:pointer}.ribbon:hover{opacity:.8}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.4em,1fr));gap:2px;background:var(--bg);border-top:1px solid var(--line);padding-top:6px}
+.ro{all:unset;cursor:pointer;padding:8px 10px;border-radius:8px}
+.ro:hover,.ro.on{background:var(--panel)}
+.ro:focus-visible{outline:3px solid var(--blue)}
+.ro span{display:block;font-size:13px;color:var(--mut)}
+.ro b{font:600 clamp(28px,3.2vw,38px)/1 "Barlow Condensed",sans-serif;white-space:nowrap}
+.ro b small{font:500 14px "IBM Plex Sans",sans-serif;color:var(--mut);margin-left:3px}
+.ro i{font-style:normal;font-size:13px;white-space:nowrap}
+.warn{grid-column:1/-1;display:grid;gap:6px;margin-top:6px}
+.warn p{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--red) 12%,transparent);font-size:14px}
+.up{color:var(--red)}.dn{color:var(--blue)}.eq{color:var(--mut)}
+.lab{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:28px;align-items:start}
+.systems{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px}
+.sys{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 14px 8px}
+.sys h3{display:flex;align-items:center;gap:8px}
+.sys h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
+.row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto 4.8em;gap:8px;align-items:baseline;width:100%;padding:7px 6px;border-top:1px solid var(--line);cursor:pointer;font-size:15px}
+.row:hover,.row.on{background:var(--bg)}
+.row.on{box-shadow:inset 3px 0 0 var(--red)}
+.row:focus-visible{outline:3px solid var(--blue)}
+.row .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.row .v small{font-weight:400;color:var(--mut);font-size:13px}
+.row .d{font-size:13px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.row .bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.row .bar i{display:block;height:100%;background:var(--c)}
+#why{position:sticky;top:calc(var(--hh) + 12px);border:1.5px solid var(--ink);border-radius:14px;padding:18px}
+#why h3{font-size:28px;margin:0 0 2px}
+#why .big{font:600 44px/1 "Barlow Condensed",sans-serif}
+#why .big small{font:500 15px "IBM Plex Sans",sans-serif;color:var(--mut)}
+#why .ref{font-size:14px;color:var(--mut);margin:4px 0 12px}
+#why p{margin:0 0 10px;font-size:15.5px}
+#why p.cond{padding-left:12px;border-left:3px solid var(--c,var(--red))}
+.tag{font-weight:600}
+.cv-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:6px}
+select{font:16px "IBM Plex Sans",sans-serif;min-height:44px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg);color:var(--ink);max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--mut);margin-top:6px}
+.legend span::before{content:"";display:inline-block;width:18px;height:3px;background:var(--c,var(--red));vertical-align:middle;margin-right:6px}
+.legend .la::before{background:none;border-top:3px dashed var(--blue)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:2px 18px;margin:6px 0 14px}
+.kpi div{padding:6px 0;border-top:2px solid var(--ink)}
+.kpi span{display:block;font-size:13px;color:var(--mut)}
+.kpi b{display:block;font:600 clamp(24px,2.6vw,32px)/1.1 "Barlow Condensed",sans-serif;white-space:nowrap}
+.kpi i{display:block;font-style:normal;font-size:13px;color:var(--mut)}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px}
+.chart h3{font-size:19px;margin:0}
+.chart .legend{margin:0 0 2px}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:start}
+.two.even{grid-template-columns:repeat(2,minmax(0,1fr))}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.toolbar .seg{min-width:240px}
+.treadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(8em,1fr));gap:2px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.treadout span{display:block;font-size:13px;color:var(--mut)}
+.treadout b{font:600 22px/1.2 "Barlow Condensed",sans-serif;white-space:nowrap}
+.treadout .zone{grid-column:1/-1;margin:4px 0 0;font-size:14px;font-weight:600;color:var(--red)}
+#t-guess{min-height:1.5em;font-size:15px}
+.tbl{border-collapse:collapse;width:100%;font-size:15px}
+.tbl th,.tbl td{text-align:right;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;white-space:normal}
+.tbl th{font-size:13px;color:var(--mut);font-weight:500}
+.scroll{overflow-x:auto}
+.crit{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.ok{color:var(--ok);font-weight:600}.no{color:var(--red);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;margin-top:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card p{margin:0 0 8px;font-size:15.5px}
+.ebar{display:flex;height:56px;border-radius:10px;overflow:hidden;margin:8px 0}
+.ebar div{display:grid;place-items:center;color:#fff;font:600 20px "Barlow Condensed",sans-serif;transition:width .25s}
+.eleg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.eleg div{display:flex;gap:6px;align-items:center;font-size:14px}
+.eleg i{width:12px;height:12px;border-radius:3px;flex:none}
+.eleg b{margin-left:auto;font-variant-numeric:tabular-nums}
+.bignum{font:600 44px/1 "Barlow Condensed",sans-serif;margin:4px 0}
+.bignum b{color:var(--blue)}
+.mugrid{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:8px;align-items:center;justify-items:center;padding:12px;background:var(--panel);border-radius:12px;border:1px solid var(--line)}
+.mu{display:block;border-radius:50%;background:var(--line2);transition:background .2s}
+.mu.tI{width:11px;height:11px}.mu.tIIa{width:17px;height:17px}.mu.tIIx{width:24px;height:24px}
+.mu.tI.on{background:var(--blue)}.mu.tIIa.on{background:var(--amber)}.mu.tIIx.on{background:var(--red)}
+.adv{}
+.simple .adv{display:none!important}
+.hdr-act{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+nav#tabs a[hidden],nav#tabs[hidden]{display:none}
+.seg.sm button{min-height:36px;font-size:14px;padding:0 10px}
+.bodywrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,260px) minmax(0,1fr);gap:20px;align-items:center}
+.bodywrap.g2{grid-template-columns:minmax(150px,240px) minmax(0,1fr)}
+.bfig svg{width:100%;height:auto;max-height:520px;display:block}
+.blist{display:grid;gap:8px}
+.bl{all:unset;cursor:pointer;display:block;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.bl:hover{border-color:var(--ink)}.bl:focus-visible{outline:3px solid var(--blue)}
+.bl b{display:block;font-size:15px}.bl span{font-size:14px;color:var(--mut)}
+.glist{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.gl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.gl h4{margin:0 0 6px}
+.hrow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;gap:4px 10px;align-items:center;font-size:15px;padding:4px 0}
+.hrow .hb{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.hrow .hb i{display:block;height:100%;background:var(--red)}
+.hrow b{text-align:right;font-variant-numeric:tabular-nums}
+.hrow em{grid-column:1/-1;font-style:normal;font-size:13px;color:var(--mut)}
+.swatch{display:inline-block;width:.7em;height:.7em;border-radius:50%;border:1px solid var(--ink);margin-right:6px;vertical-align:baseline}
+.breath{transform-box:fill-box;transform-origin:50% 0;animation:breath 3s ease-in-out infinite}
+@keyframes breath{0%,100%{transform:scale(1)}45%{transform:scale(var(--a,1.08))}}
+@media(prefers-reduced-motion:reduce){.breath{animation:none}}
+@media(max-width:760px){.bodywrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.bodywrap .bfig{grid-column:1/-1;grid-row:1;max-width:220px;justify-self:center}.bodywrap.g2{grid-template-columns:minmax(0,1fr)}}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px 24px;margin-bottom:10px}
+.side{display:grid;gap:14px}
+.mulegend{display:grid;gap:6px;margin-top:10px;font-size:14px}
+.mulegend div{display:flex;gap:8px;align-items:center}.mulegend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.quizbox{max-width:760px}
+.q-t{font-weight:600;font-size:18px;margin:0 0 4px}
+.q-s{font-size:14px;color:var(--mut);margin:0 0 12px}
+.qv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.qv .ch{display:flex;gap:4px}
+.qv .ch button{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg);color:var(--ink);font:600 18px "IBM Plex Sans",sans-serif;cursor:pointer}
+.qv .ch button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.res{grid-column:1/-1;font-size:14.5px;margin:4px 0}
+.mc{display:grid;gap:8px;margin:12px 0}
+.mc button{text-align:left;font:16px "IBM Plex Sans",sans-serif;min-height:48px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg);color:var(--ink);cursor:pointer}
+.mc button:hover:not(:disabled){border-color:var(--ink)}
+.mc button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.mc button.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent)}
+.refs{columns:2 380px;column-gap:32px;padding-left:18px;font-size:15px}
+.refs li{break-inside:avoid;margin-bottom:10px}
+.refs i{color:var(--mut)}
+#tour{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:50;width:min(680px,calc(100% - 24px));background:var(--ink);color:var(--bg);border-radius:16px;box-shadow:0 10px 40px #0005;max-height:48vh;overflow:auto}
+.tour-in{padding:16px 18px}
+.tour-in h3{font-size:26px;margin:2px 0 6px}
+.tour-in p{margin:0 0 12px;font-size:15.5px}
+.tour-n{font-size:13px;opacity:.7;margin:0!important}
+#tour .btn{border-color:var(--bg);color:var(--bg)}
+#tour .btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+#tour .btn.ghost{border-color:transparent;margin-left:auto}
+footer.band{border-top:1px solid var(--line);font-size:13px;color:var(--mut);padding-block:20px}
+@media(max-width:900px){.lab,.two,.two.even{grid-template-columns:minmax(0,1fr)}#why{position:static}}
+@media(max-width:760px){.main{grid-template-columns:minmax(0,1fr);grid-template-areas:"pic" "read" "ctl"}.read{position:sticky;top:0;z-index:3;border-bottom:1px solid var(--line);grid-template-columns:repeat(3,minmax(0,1fr))}.ro{padding:6px}.ro b{font-size:24px}.ro i{display:none}.fig{min-height:300px}.charts{grid-template-columns:minmax(0,1fr)}.mugrid{grid-template-columns:repeat(12,minmax(0,1fr))}}
+@media(max-width:600px){.qv{grid-template-columns:minmax(0,1fr)}.eleg{grid-template-columns:minmax(0,1fr)}.tbl{font-size:13px}.tbl th,.tbl td{padding:6px 4px}}
+
+:root{--hh:106px}
+html{scroll-padding-top:calc(var(--hh) + 10px)}
+header.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:9px max(3vw,16px)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:none}
+.brand svg{width:34px;height:34px}
+.brand b{font:700 24px/1 "Barlow Condensed",sans-serif;letter-spacing:-.01em}
+nav#groups{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;justify-content:center}
+nav#groups::-webkit-scrollbar{display:none}
+nav#groups a{flex:none;color:var(--mut);text-decoration:none;font-weight:600;font-size:15px;padding:8px 14px;border-radius:999px}
+nav#groups a:hover{color:var(--ink);background:var(--panel)}
+nav#groups a[aria-current=page]{background:var(--ink);color:var(--bg)}
+.hdr-act{display:flex;gap:8px;align-items:center;flex:none}
+.btn.sm{min-height:38px;padding:0 14px;font-size:14px}
+nav#tabs{border-top:1px solid var(--line)}
+nav#tabs[hidden],nav#tabs a[hidden]{display:none}
+.tabs-in{max-width:1320px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;padding:0 max(3vw,16px);scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+nav#tabs a{flex:none;display:flex;align-items:center;gap:7px;color:var(--mut);text-decoration:none;font-weight:500;font-size:14.5px;padding:10px 12px 9px;border-bottom:3px solid transparent;white-space:nowrap}
+nav#tabs a[style]::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+nav#tabs a:hover{color:var(--ink)}
+nav#tabs a[aria-current=page]{color:var(--ink);border-bottom-color:var(--c,var(--red))}
+.band .wrap{max-width:1240px}
+.corpo{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:290px minmax(0,1fr);gap:28px;padding:22px max(3vw,16px) 48px;align-items:start}
+.corpo[hidden]{display:none}
+#player{position:sticky;top:calc(var(--hh) + 14px)}
+.pl-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px}
+.pl-head{display:flex;gap:12px;align-items:center}
+.playbtn{width:56px;height:56px;border-radius:50%;border:0;background:var(--red);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none;box-shadow:0 4px 14px color-mix(in srgb,var(--red) 35%,transparent)}
+.playbtn:hover{filter:brightness(1.1)}
+.playbtn svg{width:22px;height:22px}
+.pl-info{display:flex;flex-direction:column;min-width:0}
+.pl-info b{font:600 28px/1.05 "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums}
+.pl-info span{font-size:13.5px;color:var(--mut);line-height:1.35}
+.pl-track{position:relative;height:30px}
+.pl-bar{position:absolute;left:12px;right:12px;top:12px;height:6px;display:flex;border-radius:3px;overflow:hidden}
+.pl-bar i{display:block;height:100%}
+input[type=range]#pl-scrub{position:absolute;inset:0;height:30px}
+input[type=range]#pl-scrub::-webkit-slider-runnable-track{background:transparent}
+input[type=range]#pl-scrub::-moz-range-track{background:transparent}
+.pl-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--mut);margin-top:-6px}
+.pl-legend span::before{content:"";display:inline-block;width:10px;height:6px;border-radius:2px;background:var(--c);margin-right:5px;vertical-align:middle}
+.pl-speed{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.pl-speed .seg button{padding:0 7px;min-width:0}
+.pl-lab{font-size:13px;color:var(--mut);margin:0}
+.pl-cfg summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 8px;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--bg)}
+.pl-cfg summary::-webkit-details-marker{display:none}
+.pl-cfg summary b{font-size:14px;font-weight:600;line-height:1.35}
+.pl-cfg summary em{grid-row:1/3;grid-column:2;align-self:center;font-style:normal;color:var(--red);font-weight:600;font-size:14px}
+.pl-cfg[open] summary em{color:var(--mut)}
+.pl-fields{display:grid;gap:10px;margin-top:12px}
+.pl-f{display:grid;gap:4px}
+.pl-f>span{font-size:13px;color:var(--mut)}
+.pl-f select{width:100%;min-height:42px;font-size:15px}
+.pl-f .seg{width:100%}
+.sv-head h2{margin:0}
+.sv-head .sub{margin:4px 0 0}
+.hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;margin-top:16px;align-items:stretch}
+.hero.stack{grid-template-columns:minmax(0,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.hero-pic{background:var(--bg);display:flex;flex-direction:column;justify-content:center}
+.now h3{margin:0 0 4px;font-size:22px}
+.kv{display:grid}
+.kv>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.kv>div>span{font-size:14px;color:var(--mut)}
+.kv>div>p{margin:0;text-align:right}
+.kv b{display:block;font:600 25px/1.1 "Barlow Condensed",sans-serif;white-space:nowrap}
+.kv i{display:block;font-style:normal;font-size:12.5px;color:var(--mut)}
+.now-list{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.now-list li{font-size:15px;line-height:1.5;padding-left:12px;border-left:3px solid var(--c,var(--red))}
+.hero.stack .now .kv{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));column-gap:24px}
+.hero.stack .now-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px 24px}
+.mech{margin-top:16px;display:flex;gap:14px;align-items:flex-start}
+.mech h3{font-size:19px;margin:0 0 4px}
+.mech p{margin:0;font-size:15.5px}
+.corpo-main .charts{margin-top:16px;gap:16px}
+.corpo-main .chart{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 14px 4px}
+.corpo-main .chart h3{font-size:18px}
+details.grp{border-top:1px solid var(--line);padding-top:8px}
+details.grp>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font:600 19px "Barlow Condensed",sans-serif;padding:4px 0}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary::after{content:"+";font:500 22px "IBM Plex Sans",sans-serif;color:var(--mut)}
+details.grp[open]>summary::after{content:"−"}
+details.grp>.gbody{display:grid;gap:14px;padding:6px 0 10px}
+@media(max-width:1000px){.corpo{grid-template-columns:minmax(0,1fr)}#player{position:static}.pl-card{grid-template-columns:minmax(0,1fr)}.hero{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){:root{--hh:0px}header.top{position:static}.top-in{flex-wrap:wrap;gap:8px 12px}nav#groups{order:3;flex-basis:100%;justify-content:flex-start}.brand b{font-size:21px}}
+.gsum{display:block;font:400 13px "IBM Plex Sans",sans-serif;color:var(--mut);margin-top:1px}
+.ctl{gap:6px}
+.ctl .btns{margin-top:10px}
+.pl-speed{flex-direction:column;align-items:stretch;gap:6px}
+.pl-speed .seg{width:100%}
+.pl-info small{font:500 15px "IBM Plex Sans",sans-serif;color:var(--mut)}
+#mini{display:none}
+.now-list:empty{display:none}
+@media(max-width:1000px){#mini{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:40;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:999px;padding:6px 16px 6px 6px;box-shadow:0 8px 24px #0004;overflow:hidden}
+#mini button{width:44px;height:44px;border-radius:50%;border:0;background:var(--red);color:#fff;display:grid;place-items:center;flex:none}#mini button svg{width:18px;height:18px}
+#mini b{font:600 20px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums}#mini span{font-size:13px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mini i{position:absolute;left:0;bottom:0;height:3px;background:var(--red)}.corpo{padding-bottom:90px}}
+.bimg{position:relative;max-width:320px;margin:0 auto}.bimg img{display:block;width:100%;height:auto;mix-blend-mode:multiply}
+:root[data-theme=dark] .bimg{background:#fff;border-radius:14px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .bimg{background:#fff;border-radius:14px}}.bimg svg{position:absolute;inset:0;width:100%;height:100%}
+@media(min-width:761px){.bodywrap:not(.g2){grid-template-columns:minmax(0,1fr) minmax(200px,320px) minmax(0,1fr)}}
+.afig{margin:0}
+.afig-img{position:relative;background:#fff;border-radius:12px;overflow:hidden}
+.afig-img img{display:block;width:100%;height:auto}
+.pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);border:2px solid #fff;display:grid;place-items:center;font:700 13px "IBM Plex Sans",sans-serif;box-shadow:0 2px 6px #0005;cursor:default;transition:transform .15s,background .15s}
+.pin.on{background:var(--red);color:#fff;transform:translate(-50%,-50%) scale(1.25)}
+.pinlist{margin:12px 0 0;padding-left:22px;columns:2 240px;column-gap:24px;font-size:14px}
+.pinlist li{break-inside:avoid;margin-bottom:6px;padding:2px 4px;border-radius:6px}
+.pinlist li span{color:var(--mut)}
+.pinlist li.on{background:color-mix(in srgb,var(--red) 12%,transparent)}
+.mech.has-fig{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:1100px){.mech.has-fig{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.pin{width:22px;height:22px;font-size:11px}}
+.reftbl td{white-space:normal;text-align:left;vertical-align:top}.reftbl th{text-align:left}.reftbl td:first-child{font-weight:600}
+.hero-home{background:linear-gradient(180deg,color-mix(in srgb,var(--red) 7%,var(--bg)),var(--bg))}
+.hh{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:32px;align-items:center}
+.hh-t{font:700 clamp(38px,5.2vw,60px)/1.03 "Barlow Condensed",sans-serif;margin:0 0 14px;text-wrap:balance}
+.hh-s{font-size:18px;max-width:60ch;margin:0 0 20px}
+.hh-pic img{display:block;width:100%;max-width:340px;height:auto;margin:0 auto;mix-blend-mode:multiply}
+a.btn{display:inline-flex;align-items:center;text-decoration:none}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:16px;margin-top:8px}
+.mod{display:grid;grid-template-rows:auto 1fr;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:transform .15s,border-color .15s}
+.mod:hover{transform:translateY(-2px);border-color:var(--ink)}
+.mod .th{height:120px;background:#fff center/cover no-repeat}
+.mod .th.ic{display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,var(--bg))}
+.mod .th.ic b{font:700 34px "Barlow Condensed",sans-serif;color:var(--c)}
+.mod div.tx{padding:12px 14px 14px}
+.mod h3{margin:0 0 4px;font-size:21px}
+.mod p{margin:0;font-size:14.5px;color:var(--mut)}
+.band.soft{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.roteiros{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.rot{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px}
+.rot h3{margin:0 0 2px;font-size:22px}
+.rot .dur{font-size:13px;color:var(--mut);margin:0 0 10px}
+.rot ol{margin:0;padding-left:0;list-style:none;counter-reset:s;display:grid;gap:6px}
+.rot li{counter-increment:s}
+.rot li button{all:unset;cursor:pointer;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:6px 8px;border-radius:10px;font-size:15px;width:100%;box-sizing:border-box}
+.rot li button::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font:700 12px "IBM Plex Sans",sans-serif;margin-top:1px}
+.rot li button:hover{background:var(--panel)}
+.rot li button:focus-visible{outline:3px solid var(--blue)}
+.rot li small{display:block;color:var(--mut);font-size:13px}
+.tips{padding-left:20px;display:grid;gap:8px}
+@media(max-width:760px){.hh{grid-template-columns:minmax(0,1fr)}.hh-pic{order:-1}.hh-pic img{max-width:200px}}
+.trilhas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:18px}
+.trilha{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 10px;border-top:5px solid var(--c)}
+.tr-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.tr-head h3{margin:0;font-size:24px}
+.tr-head span{font-size:13px;color:var(--mut);white-space:nowrap}
+.tr-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:8px 0 10px}
+.tr-bar i{display:block;height:100%;background:var(--c);transition:width .3s}
+.lic{border-top:1px solid var(--line)}
+.lic summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;padding:10px 4px;font-weight:600;font-size:16px}
+.lic summary::-webkit-details-marker{display:none}
+.lic summary::after{content:"+";margin-left:auto;color:var(--mut);font-weight:500;font-size:20px}
+.lic[open] summary::after{content:"−"}
+.lnum{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--bg);border:2px solid var(--c);color:var(--ink);font-size:13px}
+.lic.ok .lnum{background:var(--c);color:#fff}
+.lbody{padding:2px 4px 14px 40px}
+.lbody p{margin:0 0 10px;font-size:15.5px}
+.lbody .obs{font-size:14.5px;color:var(--mut)}
+.chk{margin-top:14px;padding:12px;border-radius:12px;background:var(--bg);border:1px dashed var(--line2)}
+.chk-q{font-weight:600;margin:0 0 8px!important}
+.chk-o{display:block;width:100%;text-align:left;font:15px "IBM Plex Sans",sans-serif;padding:9px 12px;margin:0 0 6px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg);color:var(--ink);cursor:pointer}
+.chk-o:hover{border-color:var(--ink)}
+.chk-o.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.chk-o.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent)}
+.chk-r{margin:4px 0 0!important;font-size:14.5px}
+@media(max-width:600px){.lbody{padding-left:4px}}
+.lbt{display:flex;flex-wrap:wrap;gap:8px}
+.ia-fab{position:fixed;right:16px;bottom:16px;z-index:45;display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;border:0;border-radius:999px;padding:0 18px 0 14px;min-height:48px;font:600 15px "IBM Plex Sans",sans-serif;box-shadow:0 8px 24px #0003;cursor:pointer}
+.ia-fab:hover{background:var(--red2)}
+.ia-pan{position:fixed;right:16px;bottom:76px;z-index:46;width:min(400px,calc(100% - 24px));max-height:calc(100vh - 110px);overflow:auto;background:var(--bg);border:1px solid var(--line2);border-radius:16px;box-shadow:0 16px 48px #0004;padding:16px;display:grid;gap:10px}
+.ia-pan[hidden]{display:none}
+.ia-h{display:flex;justify-content:space-between;align-items:center}
+.ia-x{background:none;border:0;font-size:26px;line-height:1;color:var(--mut);cursor:pointer;min-width:40px;min-height:40px}
+.ia-ctx{margin:0;font-size:13px;color:var(--mut);background:var(--panel);border-radius:8px;padding:8px 10px}
+.ia-pan textarea{width:100%;font:15px/1.4 "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--bg);border:1.5px solid var(--line2);border-radius:10px;padding:10px;resize:vertical}
+.ia-pan textarea:focus{outline:2px solid var(--red);border-color:transparent}
+.ia-sug{display:flex;flex-wrap:wrap;gap:6px}
+.chip-s{font:13px "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 10px;cursor:pointer}
+.chip-s:hover{border-color:var(--ink)}
+.ia-note{margin:0;font-size:12px;color:var(--mut)}
+.ia-pan{grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto}
+.ia-h span{display:flex;align-items:center;gap:4px}
+.ia-new{background:none;border:1px solid var(--line2);border-radius:999px;color:var(--mut);font:13px "IBM Plex Sans",sans-serif;padding:4px 10px;cursor:pointer}
+.ia-sug[hidden]{display:none}
+.ia-ctx{padding:0 10px!important;border-block:8px solid var(--panel);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ia-log{display:grid;gap:10px;overflow:auto;max-height:46vh;align-content:start}
+.ia-log:empty{display:none}
+.ia-msg{padding:10px 12px;border-radius:12px;font-size:15px;line-height:1.5;max-width:92%}
+.ia-msg p{margin:0 0 8px}.ia-msg p:last-child{margin:0}.ia-msg ul{margin:0 0 8px;padding-left:20px}
+.ia-msg.me{justify-self:end;background:var(--red);color:#fff;border-bottom-right-radius:4px}
+.ia-msg.bot{justify-self:start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:4px}
+.ia-msg.err{font-size:14px;color:var(--mut)}
+.ia-form{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.ia-form textarea{min-height:48px}
+.ia-ext{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:13px;color:var(--mut)}
+.ia-ext.in{margin-top:8px}
+.lnk{background:none;border:0;padding:4px 0;color:var(--red);font:600 13px "IBM Plex Sans",sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ia-dots{display:inline-flex;gap:4px}.ia-dots i{width:7px;height:7px;border-radius:50%;background:var(--mut);animation:iad 1s infinite}.ia-dots i:nth-child(2){animation-delay:.15s}.ia-dots i:nth-child(3){animation-delay:.3s}
+@keyframes iad{0%,80%{opacity:.25}40%{opacity:1}}
+@media(max-width:1000px){.ia-fab{bottom:80px;padding:0 14px}.ia-pan{bottom:140px;right:12px}}
+@media(max-width:600px){.ia-fab span{display:none}.ia-fab{padding:0;width:52px;justify-content:center}}
+@media print{.ia-fab,.ia-pan{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+<a class="brand" href="#inicio" aria-label="Fisiologia em Ação, início"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 90C20 68 4 52 4 32C4 17 15 7 29 7C39 7 46 13 50 21C54 13 61 7 71 7C85 7 96 17 96 32C96 52 80 68 50 90Z" fill="var(--red)"/><path d="M14 46H34L41 30L52 62L59 46H86" stroke="#fff" stroke-width="7" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg><b>Fisiologia em Ação</b></a>
+<nav id="groups" aria-label="Seções"><a href="#inicio" data-g="inicio">Início</a><a href="#geral" data-g="corpo">Corpo em treino</a><a href="#simulador" data-g="lab">Laboratório</a><a href="#quiz" data-g="quiz">Quiz</a><a href="#referencias" data-g="ref">Referências</a></nav>
+<div class="hdr-act"><div class="seg sm" id="modeSeg" aria-label="Versão"><button data-v="0">Completa</button><button data-v="1">Simples</button></div><button class="btn sm pri" id="startTour">Apresentar</button></div>
+</div>
+<nav id="tabs" aria-label="Módulos"><div class="tabs-in">
+<a href="#geral" data-g="corpo" style="--c:var(--ink)">Visão geral</a><a href="#coracao" data-g="corpo" style="--c:var(--red)">Coração</a><a href="#respiracao" data-g="corpo" style="--c:var(--blue)">Respiração</a><a href="#combustivel" data-g="corpo" style="--c:var(--amber)">Combustível</a><a href="#calor" data-g="corpo" style="--c:var(--plum)">Calor e água</a><a href="#hormonios" data-g="corpo" style="--c:var(--red2)">Hormônios</a><a href="#rins" data-g="corpo" style="--c:var(--teal)">Rins e digestão</a>
+<a href="#simulador" data-g="lab">Simulador</a><a href="#teste" data-g="lab" class="adv">Teste incremental</a><a href="#cinetica" data-g="lab" class="adv">Cinética e EPOC</a><a href="#energia" data-g="lab">Sistemas energéticos</a><a href="#hemoglobina" data-g="lab" class="adv">Hemoglobina</a><a href="#adaptacoes" data-g="lab" class="adv">Adaptações aeróbias</a><a href="#forca" data-g="lab">Força</a>
+</div></nav>
+</header>
+
+<!-- INÍCIO -->
+<div id="v-inicio" hidden>
+<section class="band hero-home"><div class="wrap hh">
+<div class="hh-txt">
+<h1 class="hh-t">Aprenda fisiologia do exercício vendo o corpo funcionar</h1>
+<p class="hh-s">Em vez de decorar, veja acontecer: rode um treino e acompanhe coração, pulmões, músculos, hormônios, rins e temperatura respondendo minuto a minuto, com a explicação de cada mudança.</p>
+<div class="btns"><a class="btn pri" href="#trilhas">Começar a aprender</a><a class="btn" href="#geral">Explorar o corpo em treino</a><button class="btn ghost" id="homeTour">Tour rápido</button></div>
+<p class="note">No topo, a versão <b>Simples</b> mostra menos dados e usa linguagem do dia a dia.</p>
+</div>
+<div class="hh-pic"><img src="img/corpo.jpg" alt="Ilustração do corpo humano com órgãos" width="768" height="1152"></div>
+</div></section>
+<section class="band" id="trilhas"><div class="wrap">
+<h2>Trilhas de aprendizado</h2>
+<p class="sub">Cada lição tem três passos: entender a ideia, ver acontecendo no corpo e conferir com uma pergunta. Seu progresso fica salvo neste navegador.</p>
+<div class="trilhas" id="homeRot"></div>
+</div></section>
+<section class="band soft"><div class="wrap">
+<h2>Explore livremente</h2>
+<p class="sub">Todos os módulos do laboratório. Depois de uma trilha, volte aqui e teste suas próprias hipóteses.</p>
+<div class="mods" id="homeMods"></div>
+</div></section>
+<section class="band"><div class="wrap two even">
+<div><h2>Como aproveitar melhor</h2>
+<ul class="tips"><li><b>Preveja antes de ver.</b> Antes de apertar o play, pense: o que vai acontecer com a FC? E com a temperatura? Depois confira.</li><li><b>Compare situações.</b> No Simulador, "Fixar como cenário A" deixa duas situações lado a lado, como nível do mar e altitude.</li><li><b>Clique nos números.</b> Toda variável tem uma explicação do mecanismo por trás.</li><li><b>Teste-se no Quiz.</b> Prever a resposta do corpo é o melhor jeito de descobrir se entendeu.</li></ul></div>
+<div><h2>Base científica</h2><p>Mecanismos e faixas de valores baseados em livros-texto atuais e em revisões e meta-análises, incluindo atualizações de 2021 a 2026. Veja a lista completa em <a href="#referencias">Referências</a>.</p>
+<p class="note">Os números vêm de um modelo didático: mostram a direção e o tamanho aproximado das respostas, não valores exatos de uma pessoa.</p>
+<p class="note">Projeto de Lucas Davanzo Botino · Educação Física, UNIRP.</p></div>
+</div></section>
+</div>
+
+<div id="corpo" class="corpo" hidden>
+<aside id="player" aria-label="Controle do treino"><div class="pl-card">
+<div class="pl-head"><button class="playbtn" id="pl-play" aria-label="Rodar o treino"></button><div class="pl-info"><b id="pl-time"></b><span id="pl-phase"></span></div></div>
+<div class="pl-track"><div class="pl-bar" id="pl-bar"></div><input type="range" id="pl-scrub" min="0" max="100" aria-label="Linha do tempo do treino"></div>
+<div class="pl-legend"><span style="--c:var(--blue)">leve</span><span style="--c:var(--amber)">moderado</span><span style="--c:var(--red)">forte</span><span style="--c:var(--line2)">parado</span></div>
+<div class="pl-speed"><span class="pl-lab">Velocidade</span><div class="seg sm" id="pl-rate"><button data-v="0.5">0,5×</button><button data-v="1">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button></div></div>
+<p class="pl-lab" id="pl-rinfo"></p>
+<details class="pl-cfg" id="pl-cfg"><summary><span class="pl-lab">Treino</span><b id="pl-sum"></b><em>Mudar</em></summary>
+<div class="pl-fields">
+<label class="pl-f"><span>Sessão</span><select id="pl-proto"></select></label>
+<label class="pl-f"><span>Ambiente</span><select id="pl-env"></select></label>
+<div class="pl-f"><span>Condicionamento</span><div class="seg sm" id="pl-tr"><button data-v="0">Sedentário</button><button data-v="1">Treinado</button></div></div>
+<div class="pl-f"><span>Água durante</span><div class="seg sm" id="pl-drink"><button data-v="0">Não bebe</button><button data-v="0.8">0,8 L/h</button></div></div>
+<div class="pl-f adv"><span>Carboidrato durante</span><div class="seg sm" id="pl-cho"><button data-v="0">Nenhum</button><button data-v="60">60 g/h</button></div></div>
+</div></details>
+</div></aside>
+<div id="mini" aria-hidden="true"><button id="mini-play" aria-label="Rodar ou pausar o treino"></button><b id="mini-time"></b><span id="mini-ph"></span><i id="mini-prog"></i></div>
+<main class="corpo-main">
+<div id="v-geral" hidden></div><div id="v-coracao" hidden></div><div id="v-respiracao" hidden></div><div id="v-combustivel" hidden></div><div id="v-calor" hidden></div><div id="v-hormonios" hidden></div><div id="v-rins" hidden></div>
+</main>
+</div>
+
+<!-- SIMULADOR -->
+<div id="v-simulador">
+<section class="band" style="padding-bottom:12px"><div class="wrap">
+<div class="chips" id="presets" aria-label="Cenários prontos"></div>
+<div class="main">
+<div class="pic"><div class="fig" id="flow"><svg id="fsvg" role="img" aria-label="Distribuição do débito cardíaco entre os tecidos"></svg></div></div>
+<div class="read" id="read"></div>
+<div class="ctl">
+<details class="grp" open><summary><span>Exercício <small class="gsum" id="gs-ex"></small></span></summary><div class="gbody">
+<div class="field"><label for="int">Intensidade <output id="o-int"></output></label><input type="range" id="int" min="0" max="100" step="5"><div class="hint" id="h-int"></div></div>
+<div class="field"><label for="dur">Tempo de exercício <output id="o-dur"></output></label><input type="range" id="dur" min="5" max="150" step="5"><div class="hint">Valores neste minuto do exercício</div></div>
+</div></details>
+<details class="grp"><summary><span>Ambiente <small class="gsum" id="gs-amb"></small></span></summary><div class="gbody">
+<div class="field"><label for="temp">Temperatura do ar <output id="o-temp"></output></label><input type="range" id="temp" min="-10" max="42" step="1"></div>
+<div class="field adv"><label for="ur">Umidade relativa <output id="o-ur"></output></label><input type="range" id="ur" min="10" max="95" step="5"><div class="hint" id="h-ur"></div></div>
+<div class="field"><label for="alt">Altitude <output id="o-alt"></output></label><input type="range" id="alt" min="0" max="5000" step="100"><div class="hint" id="h-alt"></div></div>
+<div class="field"><label for="desid">Desidratação <output id="o-desid"></output></label><input type="range" id="desid" min="0" max="5" step="0.5"><div class="hint">Perda de massa corporal em água</div></div>
+</div></details>
+<details class="grp"><summary><span>Pessoa <small class="gsum" id="gs-pes"></small></span></summary><div class="gbody">
+<div class="field"><label>Condicionamento</label><div class="seg" id="segTr"><button data-v="0">Sedentário</button><button data-v="1">Treinado aeróbio</button></div></div>
+<div class="field"><label>Sexo</label><div class="seg" id="segSex"><button data-v="M">Homem</button><button data-v="F">Mulher</button></div></div>
+<div class="field adv"><label for="age">Idade <output id="o-age"></output></label><input type="range" id="age" min="15" max="80" step="1"><div class="hint" id="h-age"></div></div>
+<div class="field adv"><label>Betabloqueador</label><div class="seg" id="segBb"><button data-v="0">Não</button><button data-v="1">Sim</button></div></div>
+</div></details>
+<details class="grp adv"><summary><span>Estratégias <small class="gsum" id="gs-est"></small></span></summary><div class="gbody">
+<div class="field"><label for="cho">Carboidrato durante <output id="o-cho"></output></label><input type="range" id="cho" min="0" max="90" step="10"></div>
+<div class="field"><label for="accH">Aclimatação ao calor <output id="o-accH"></output></label><input type="range" id="accH" min="0" max="14" step="1"></div>
+<div class="field" id="accAf"><label for="accA">Tempo na altitude <output id="o-accA"></output></label><input type="range" id="accA" min="0" max="28" step="1"><div class="hint">Faz efeito acima de 1.500 m</div></div></div></details>
+<div class="btns"><button class="btn pri" id="fixA">Fixar como cenário A</button><button class="btn" id="clrA" hidden>Limpar A</button><button class="btn ghost" id="resetP">Reiniciar</button></div>
+<p class="alab" id="alab"></p>
+</div>
+</div>
+</div></section>
+<section class="band" style="padding-top:12px"><div class="wrap lab">
+<div>
+<h2>O que mudou em cada sistema</h2>
+<p class="sub" id="refline"></p>
+<div class="systems" id="systems"></div>
+<p class="note">Hormônios em índice relativo de 0 a 100 (0 = mínimo, 100 = máximo fisiológico): mostram a direção e o tamanho da resposta, não a concentração.</p>
+<div style="margin-top:28px">
+<div class="cv-head"><h2 style="margin:0">Curva pela intensidade</h2><select id="cv" aria-label="Variável do gráfico"></select></div>
+<p class="sub" style="margin-bottom:4px" id="cvsub"></p>
+<div class="fig md"><svg id="csvg"></svg></div>
+<div class="legend"><span>Condições atuais</span><span class="la" id="lgA" hidden>Cenário A</span></div>
+</div>
+</div>
+<aside id="why" aria-live="polite"></aside>
+</div></section>
+</div>
+
+<!-- TESTE INCREMENTAL -->
+<div id="v-teste" hidden><section class="band"><div class="wrap">
+<h2>Teste incremental até o VO₂máx</h2>
+<p class="sub">Ergoespirometria em rampa gerada pelo modelo, com a pessoa definida no simulador (sexo, idade, altitude, calor, betabloqueador). Rode o teste e veja onde aparecem os limiares.</p>
+<div class="toolbar">
+<div class="seg" id="t-segTr"><button data-v="0">Sedentário</button><button data-v="1">Treinado</button></div>
+<button class="btn pri" id="t-play">Rodar o teste</button>
+<button class="btn" id="t-mode">Desafio: encontre os limiares</button>
+<button class="btn pri" id="t-check" hidden>Conferir</button>
+<button class="btn ghost" id="t-again" hidden>Recomeçar</button>
+</div>
+<div class="field" style="max-width:520px"><label for="t-scrub">Linha do tempo</label><input type="range" id="t-scrub" min="0" max="1000" value="1000"></div>
+<p id="t-guess"></p>
+<div class="treadout" id="t-read"></div>
+<div class="charts">
+<div class="chart"><h3>VO₂ e VCO₂</h3><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">VCO₂</span></div><div class="fig sm"><svg id="t-c1"></svg></div></div>
+<div class="chart"><h3>Equivalentes ventilatórios</h3><div class="legend"><span>VE/VO₂</span><span style="--c:var(--blue)">VE/VCO₂</span></div><div class="fig sm"><svg id="t-c2" style="cursor:crosshair"></svg></div></div>
+<div class="chart"><h3>Lactato sanguíneo</h3><div class="fig sm"><svg id="t-c3"></svg></div></div>
+<div class="chart"><h3>Frequência cardíaca</h3><div class="fig sm"><svg id="t-c4"></svg></div></div>
+<div class="chart"><h3>Quociente respiratório</h3><div class="fig sm"><svg id="t-c5"></svg></div></div>
+<div class="chart"><h3>Ventilação</h3><div class="fig sm"><svg id="t-c6"></svg></div></div>
+</div>
+<div class="two" style="margin-top:24px">
+<div id="t-sum"></div>
+<div class="card"><h3>Como achar os limiares</h3>
+<p><b>VT1 (limiar aeróbio):</b> o VE/VO₂ para de cair e começa a subir, enquanto o VE/VCO₂ fica estável. O CO₂ extra do bicarbonato começa a aparecer. Coincide mais ou menos com o lactato saindo do repouso (~2 mmol/L).</p>
+<p><b>VT2 (compensação respiratória):</b> o VE/VCO₂ também sobe. A ventilação passa a compensar a acidose. Próximo de ~4 mmol/L e da máxima fase estável de lactato.</p>
+<p><b>Para que servem:</b> dividem as zonas de treino. Abaixo do VT1, volume fácil; entre VT1 e VT2, ritmo de prova longa; acima do VT2, intervalados curtos.</p><p><b>Por que evitar "limiar anaeróbio":</b> o lactato é produzido mesmo com oxigênio sobrando e serve de combustível para outros tecidos. O termo antigo passa a ideia errada de falta de O₂; a literatura atual prefere limiar de lactato, limiares ventilatórios e domínios de intensidade (Poole et al., 2021; Brooks, 2020).</p></div>
+</div>
+</div></section></div>
+
+<!-- CINÉTICA -->
+<div id="v-cinetica" hidden><section class="band"><div class="wrap">
+<h2>Cinética do VO₂, déficit de O₂ e EPOC</h2>
+<p class="sub">O que acontece minuto a minuto ao começar e ao parar um exercício de carga constante.</p>
+<div class="toolbar">
+<div class="seg" id="k-segDom"><button data-v="mod">Moderado</button><button data-v="pes">Pesado</button><button data-v="sev">Severo</button></div>
+<div class="seg" id="k-segTr"><button data-v="0">Sedentário</button><button data-v="1">Treinado</button></div>
+<div class="seg" id="k-segRec"><button data-v="0">Recuperação passiva</button><button data-v="1">Ativa</button></div>
+</div>
+<div class="field" style="max-width:420px"><label for="k-te">Duração do exercício <output id="k-o-te"></output></label><input type="range" id="k-te" min="3" max="12" step="1"></div>
+<div class="kpi" id="k-kpi"></div>
+<div class="two">
+<div><div class="chart"><h3>Consumo de O₂</h3><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">Déficit de O₂</span><span style="--c:var(--amber)">EPOC</span></div><div class="fig md"><svg id="k-c1"></svg></div></div>
+<div class="charts" style="margin-top:14px"><div class="chart"><h3>Frequência cardíaca</h3><div class="fig sm"><svg id="k-c2"></svg></div></div><div class="chart"><h3>Lactato</h3><div class="fig sm"><svg id="k-c3"></svg></div></div></div></div>
+<div><div class="card" id="k-dyn"></div>
+<div class="card" style="margin-top:16px"><h3>Por que existe o déficit e o EPOC</h3>
+<p>No início, a fosforilação oxidativa demora para acelerar. Enquanto isso o ATP vem da PCr, da glicólise e do O₂ guardado na mioglobina e no sangue: esse "empréstimo" é o déficit.</p>
+<p>Depois, o VO₂ fica acima do repouso. A fase rápida repõe PCr e O₂ da mioglobina e hemoglobina; a lenta cobre temperatura, catecolaminas, ventilação e trabalho cardíaco elevados. A remoção do lactato explica pouco do EPOC (Gaesser e Brooks, 1984; Børsheim e Bahr, 2003).</p>
+<p>A queda da FC no 1º minuto mede a reativação vagal; menos de 12 bpm após teste de esforço se associa a maior risco (Cole et al., 1999; meta-análise de Qiu et al., 2017).</p></div></div>
+</div>
+</div></section></div>
+
+<!-- ENERGIA -->
+<div id="v-energia" hidden><section class="band"><div class="wrap two even">
+<div>
+<h2>Sistemas energéticos</h2>
+<p class="sub">Contribuição de cada sistema em um esforço máximo, conforme a duração (Gastin, 2001).</p>
+<div class="field"><label for="e-dur">Duração do esforço máximo <output id="e-o-dur"></output></label><input type="range" id="e-dur" min="0" max="1000"></div>
+<div class="chips" id="e-sports" style="margin:8px 0 6px"></div>
+<div class="ebar" id="e-bar"></div>
+<div class="eleg" id="e-leg"></div>
+<div class="fig md"><svg id="e-c1"></svg></div>
+<div id="e-txt"></div>
+</div>
+<div>
+<h2>Ressíntese de fosfocreatina</h2>
+<p class="sub">Quanto da PCr volta em cada tempo de descanso. Depende do esforço escolhido ao lado: quanto ele esvaziou a PCr e quanto acidificou o músculo.</p>
+<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+<div class="field"><label>Condicionamento aeróbio</label><div class="seg" id="e-segTr"><button data-v="0">Sedentário</button><button data-v="1">Treinado</button></div></div>
+<div class="field"><label>Recuperação</label><div class="seg" id="e-segRec"><button data-v="0">Passiva</button><button data-v="1">Ativa</button></div></div>
+</div>
+<p id="e-dep" style="margin:0 0 6px"></p>
+<div class="field"><label for="e-rest">Descanso <output id="e-o-rest"></output></label><input type="range" id="e-rest" min="0" max="300" step="5"></div>
+<p class="bignum" id="e-pcr"></p>
+<div class="fig md"><svg id="e-c2"></svg></div>
+<p id="e-pcrtxt"></p>
+<div class="legend"><span style="--c:var(--blue)">Este cenário</span><span class="la" style="--c:var(--mut)">Depois de um sprint de 6 s</span></div>
+<p class="note">Tempos dos exemplos aproximados para atletas bem treinados. Recuperação calibrada em Bogdanis et al. (1995): após 30 s de sprint máximo, ~65% da PCr volta em 1,5 min e ~85% em 6 min.</p>
+</div>
+</div></section></div>
+
+<!-- HEMOGLOBINA -->
+<div id="v-hemoglobina" hidden><section class="band"><div class="wrap">
+<h2>Curva de dissociação da oxi-hemoglobina</h2>
+<p class="sub">Mexa no ambiente do sangue e veja a curva se deslocar. A tracejada é a curva normal; a faixa laranja mostra o O₂ entregue entre o sangue arterial e o venoso.</p>
+<div class="chips" id="h-pre"></div>
+<div class="two">
+<div><div class="kpi" id="h-kpi"></div><div class="fig" style="min-height:380px"><svg id="h-c1"></svg></div><div id="h-txt"></div></div>
+<div class="side">
+<div class="field"><label for="h-temp">Temperatura <output id="h-o-temp"></output></label><input type="range" id="h-temp" min="34" max="42" step="0.5"></div>
+<div class="field"><label for="h-ph">pH <output id="h-o-ph"></output></label><input type="range" id="h-ph" min="7.0" max="7.6" step="0.01"></div>
+<div class="field"><label for="h-pco2">PCO₂ <output id="h-o-pco2"></output></label><input type="range" id="h-pco2" min="20" max="80" step="1"></div>
+<div class="field"><label for="h-dpg">2,3-DPG <output id="h-o-dpg"></output></label><input type="range" id="h-dpg" min="3" max="8" step="0.1"></div>
+<div class="field"><label for="h-pa">PO₂ arterial <output id="h-o-pa"></output></label><input type="range" id="h-pa" min="25" max="110" step="1"></div>
+<div class="field"><label for="h-pv">PO₂ venosa <output id="h-o-pv"></output></label><input type="range" id="h-pv" min="10" max="50" step="1"></div>
+</div>
+</div>
+</div></section></div>
+
+<!-- ADAPTAÇÕES -->
+<div id="v-adaptacoes" hidden><section class="band"><div class="wrap">
+<h2>Adaptações ao treino aeróbio e destreino</h2>
+<p class="sub">Escolha quantas semanas de treino e de pausa. Toque numa variável para destacá-la no gráfico.</p>
+<div class="two">
+<div>
+<div class="toolbar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 24px">
+<div class="field"><label for="a-w">Semanas de treino <output id="a-o-w"></output></label><input type="range" id="a-w" min="1" max="24" step="1"></div>
+<div class="field"><label for="a-d">Semanas parado depois <output id="a-o-d"></output></label><input type="range" id="a-d" min="0" max="12" step="1"></div>
+</div>
+<div class="fig" style="min-height:380px"><svg id="a-c1"></svg></div>
+<div id="a-txt"></div>
+</div>
+<div class="sys" style="--c:var(--red)"><h3>Mudança em relação ao início</h3><div id="a-list"></div></div>
+</div>
+</div></section></div>
+
+<!-- FORÇA -->
+<div id="v-forca" hidden>
+<section class="band"><div class="wrap">
+<h2>Exercício de força: o que acontece numa série</h2>
+<p class="sub">Escolha o exercício, a carga e onde a série termina. Veja a pressão arterial repetição a repetição e quais unidades motoras estão trabalhando.</p>
+<div class="fgrid">
+<div class="field"><label>Exercício</label><div class="seg" id="f-segEx"><button data-v="rosca">Rosca</button><button data-v="supino">Supino</button><button data-v="leg">Leg press</button></div></div>
+<div class="field"><label for="f-pct">Carga <output id="f-o-pct"></output></label><input type="range" id="f-pct" min="30" max="100" step="5"><div class="hint" id="f-h-pct"></div></div>
+<div class="field"><label for="f-rir">Fim da série <output id="f-o-rir"></output></label><input type="range" id="f-rir" min="0" max="6" step="1"><div class="hint" id="f-h-rir"></div></div>
+<div class="field"><label>Respiração</label><div class="seg" id="f-segVal"><button data-v="1">Com Valsalva</button><button data-v="0">Sem Valsalva</button></div></div>
+</div>
+<div class="kpi" id="f-kpi"></div>
+<div class="two">
+<div class="chart"><h3>Pressão arterial durante a série</h3><div class="legend"><span>Sistólica</span><span style="--c:var(--blue)">Diastólica</span></div><div class="fig" style="min-height:340px"><svg id="f-c1"></svg></div></div>
+<div>
+<h3>Unidades motoras recrutadas</h3>
+<div class="field"><label for="f-view">Ver repetição <output id="f-o-view"></output></label><input type="range" id="f-view" min="1" max="10" step="1"></div>
+<p id="f-mu-head" style="margin:4px 0 10px;font-size:15px"></p>
+<div class="mugrid" id="f-mu"></div>
+<div class="mulegend" id="f-mu-leg"></div>
+</div>
+</div>
+<div class="card mech has-fig" style="margin-top:20px" id="f-fig"></div>
+<div class="cards">
+<div class="card"><h3>Por que a pressão dispara</h3><p>No exercício de força a contração comprime as artérias do músculo e a resistência periférica sobe, ao contrário do aeróbio. Com a manobra de Valsalva a pressão dentro do tórax se soma à arterial: no leg press até a falha, ~320/250 mmHg em média (MacDougall et al., 1985). Ao soltar o ar, cai por alguns segundos.</p></div>
+<div class="card"><h3>Por que sobe ao longo da série</h3><p>A cada repetição o músculo fadiga: a mesma carga passa a exigir uma fração maior da força disponível. Mais esforço central e o metaborreflexo (metabólitos acumulados no músculo) elevam pressão e FC. Por isso as últimas repetições são as que mais sobem, mesmo com carga leve.</p></div>
+<div class="card"><h3>Recrutamento e hipertrofia</h3><p>Pelo princípio do tamanho (Henneman, 1957) entram primeiro as unidades tipo I; as tipo II só quando o esforço sobe. Com 30 a 40% de 1RM a 1ª repetição usa poucas, mas perto da falha quase todas entram. Por isso cargas leves até perto da falha geram hipertrofia parecida com cargas altas (Schoenfeld et al., 2017; Lopez et al., 2021). Teste mudando a repetição.</p></div>
+<div class="card"><h3>Na prática</h3><p>Para alunos hipertensos ou cardiopatas: expirar na fase concêntrica, evitar Valsalva, terminar a série com 2 ou 3 repetições em reserva e preferir cargas moderadas, com liberação médica. Repare como as repetições em reserva baixam o pico.</p></div>
+</div>
+</div></section>
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+<h2>Ganhos de força: neural ou hipertrofia?</h2>
+<p class="sub">Para iniciantes em treino de força progressivo, 2 a 3 vezes por semana. Curvas ilustrativas.</p>
+<div class="two">
+<div>
+<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+<div class="field"><label for="f-w">Semanas de treino <output id="f-o-w"></output></label><input type="range" id="f-w" min="1" max="24" step="1"></div>
+<div class="field"><label for="f-d">Semanas parado depois <output id="f-o-d"></output></label><input type="range" id="f-d" min="0" max="12" step="1"></div>
+</div>
+<div class="legend"><span style="--c:var(--blue)">Adaptações neurais</span><span>Hipertrofia</span></div>
+<div class="fig md"><svg id="f-c2"></svg></div>
+</div>
+<div><div class="kpi" id="f-kpi2"></div>
+<p>Nas primeiras semanas quase todo o ganho de força é <b>neural</b>: mais unidades motoras ativadas, maior frequência de disparo, melhor coordenação e menos coativação dos antagonistas. A <b>hipertrofia</b> passa a pesar depois de ~6 a 8 semanas (Moritani e deVries, 1979; Sale, 1988; Škarabot et al., 2021). O "inchaço" das 2 a 3 primeiras semanas é em boa parte edema do dano muscular (Damas et al., 2016).</p>
+<p>Com o treino, fibras IIx viram IIa. Ao parar, a força se mantém bem nas primeiras semanas e a proporção de IIx pode passar do nível inicial (overshoot; Andersen e Aagaard, 2000).</p></div>
+</div>
+</div></section>
+</div>
+
+<!-- QUIZ -->
+<div id="v-quiz" hidden><section class="band"><div class="wrap quizbox">
+<h2>Quiz</h2>
+<p class="sub">Preveja a resposta do corpo em situações do simulador, ou teste os conceitos. As respostas trazem a explicação.</p>
+<div class="toolbar"><div class="seg" id="q-seg"><button data-v="pred">Preveja a resposta</button><button data-v="mc">Conceitos</button></div><span id="q-score" style="font-weight:600"></span><button class="btn ghost" id="q-reset">Zerar placar</button></div>
+<div id="q-body"></div>
+</div></section></div>
+
+<!-- REFERÊNCIAS -->
+<div id="v-referencias" hidden><section class="band"><div class="wrap">
+<h2>Referências</h2>
+<p class="sub">Base científica dos mecanismos e das faixas de valores do app, revisada em novembro de 2026. Os trabalhos clássicos continuam citados porque descreveram os fenômenos pela primeira vez; ao lado de cada um está a revisão ou meta-análise mais recente que atualiza o tema.</p>
+<h3>Clássicos e suas atualizações</h3>
+<div class="scroll"><table class="tbl reftbl"><thead><tr><th>Tema</th><th>Clássico</th><th>Atualização</th><th>O que mudou</th></tr></thead><tbody>
+<tr><td>Carboidrato durante o exercício</td><td>ACSM, 2016 (até 90 g/h)</td><td>Morton et al., 2026</td><td>Teto pode subir para ~120 g/h em atletas treinados; doses de 120 a 200 g/h ainda sem evidência</td></tr>
+<tr><td>Exercício no calor e hidratação</td><td>Nielsen, 1938; Sawka et al., 2007; Périard et al., 2015</td><td>Périard, Eijsvogels e Daanen, 2021; Cramer et al., 2022</td><td>Revisões amplas sobre termorregulação, hidratação, aclimatação e estratégias de resfriamento</td></tr>
+<tr><td>Lactato e acidose</td><td>Brooks e Mercier, 1994; Robergs et al., 2004</td><td>Brooks, 2020; Poole et al., 2021</td><td>Lactato como combustível e sinalizador; o termo "limiar anaeróbio" é desaconselhado</td></tr>
+<tr><td>Critérios de VO₂máx</td><td>Howley, Bassett e Welch, 1995</td><td>Poole e Jones, 2017</td><td>Critérios secundários pouco confiáveis; recomenda-se fase de verificação</td></tr>
+<tr><td>EPOC</td><td>Gaesser e Brooks, 1984</td><td>Børsheim e Bahr, 2003</td><td>EPOC cresce de forma curvilínea com a intensidade e quase linear com a duração</td></tr>
+<tr><td>Recuperação da FC</td><td>Cole et al., 1999</td><td>Qiu et al., 2017 (meta-análise)</td><td>Recuperação lenta associada a ~68% mais risco de mortalidade</td></tr>
+<tr><td>Hipoxemia induzida pelo exercício</td><td>Dempsey e Wagner, 1999</td><td>Dominelli e Sheel, 2019; Peters et al., 2023</td><td>Ocorre também em submáximo e parece mais comum em mulheres</td></tr>
+<tr><td>Deriva cardiovascular</td><td>Coyle e González-Alonso, 2001</td><td>Souissi et al., 2021; Laginestra et al., 2023</td><td>Papel da FC alta reduzindo o enchimento do ventrículo</td></tr>
+<tr><td>Fluxo para o músculo</td><td>Rowell, 1974</td><td>Joyner e Casey, 2015</td><td>Nenhum vasodilatador isolado explica a hiperemia; competição músculo × pressão arterial</td></tr>
+<tr><td>Adaptações neurais à força</td><td>Moritani e deVries, 1979; Sale, 1988</td><td>Škarabot et al., 2021</td><td>Evidência por unidades motoras; local exato da adaptação ainda incerto</td></tr>
+<tr><td>Carga e hipertrofia</td><td>Schoenfeld et al., 2017</td><td>Lopez et al., 2021</td><td>Hipertrofia igual entre cargas até a falha; força maior com cargas altas</td></tr>
+<tr><td>Proximidade da falha</td><td>—</td><td>Refalo et al., 2023; Robinson et al., 2024</td><td>Hipertrofia aumenta perto da falha (relação não linear); força quase não depende disso</td></tr>
+<tr><td>Intervalo entre séries</td><td>Schoenfeld et al., 2016</td><td>Singer et al., 2024</td><td>Pequena vantagem para descansos acima de 60 s</td></tr>
+<tr><td>Destreino</td><td>Coyle et al., 1984; Mujika e Padilla, 2000</td><td>Barbieri et al., 2024; Encarnação et al., 2022</td><td>Queda do VO₂máx ligada à perda de volume sanguíneo e plasmático</td></tr>
+<tr><td>Treino em altitude</td><td>Levine e Stray-Gundersen, 1997</td><td>Gore et al., 2013; Deng et al., 2025</td><td>Ganho de hemoglobina; efeito maior com ≥3 semanas</td></tr>
+<tr><td>Pressão no exercício de força</td><td>MacDougall et al., 1985</td><td>Perry e Lucas, 2021</td><td>Valsalva aumenta a pressão e reduz o fluxo cerebral; risco de síncope após a série</td></tr>
+</tbody></table></div>
+<p class="note">Continuam como referência principal, sem substituto mais recente: Henneman, 1957 (princípio do tamanho); Gastin, 2001 (sistemas energéticos); Bogdanis et al., 1995 (ressíntese de PCr); Spencer et al., 2006 (recuperação ativa); Tanaka et al., 2001 (FCmáx); Wehrlin e Hallén, 2006 (VO₂máx e altitude); Holloszy e Coyle, 1984; Damas et al., 2016; Andersen e Aagaard, 2000; Montain e Coyle, 1992; Poole e Jones, 2012.</p>
+<h3>Livros-texto (edições atuais)</h3>
+<ul class="refs">
+<li>Kenney WL, Wilmore JH, Costill DL. <i>Physiology of Sport and Exercise.</i> 9th ed. Human Kinetics; 2025. Em português: <i>Fisiologia do Esporte e do Exercício</i>, 7ª ed., Manole.</li>
+<li>Powers SK, Howley ET, Quindry J. <i>Exercise Physiology: Theory and Application to Fitness and Performance.</i> 12th ed. McGraw Hill; 2024.</li>
+<li>McArdle WD, Katch FI, Katch VL. <i>Exercise Physiology: Nutrition, Energy, and Human Performance.</i> 9th ed. Wolters Kluwer; 2023.</li>
+<li>Wasserman K et al. <i>Principles of Exercise Testing and Interpretation.</i> Lippincott Williams &amp; Wilkins.</li>
+<li>West JB. <i>Fisiologia Respiratória: Princípios Básicos.</i> Artmed.</li>
+</ul>
+<h3>Artigos</h3>
+<ul class="refs">
+<li>Andersen JL, Aagaard P. Myosin heavy chain IIX overshoot in human skeletal muscle. <i>Muscle Nerve</i>. 2000;23(7):1095-1104.</li>
+<li>Barbieri A et al. Cardiorespiratory and metabolic consequences of detraining in endurance athletes. <i>Front Physiol</i>. 2024;14:1334766.</li>
+<li>Bogdanis GC et al. Recovery of power output and muscle metabolites following 30 s of maximal sprint cycling in man. <i>J Physiol</i>. 1995;482(2):467-480.</li>
+<li>Børsheim E, Bahr R. Effect of exercise intensity, duration and mode on post-exercise oxygen consumption. <i>Sports Med</i>. 2003;33(14):1037-1060.</li>
+<li>Brooks GA. Lactate as a fulcrum of metabolism. <i>Redox Biol</i>. 2020;35:101454.</li>
+<li>Brooks GA, Mercier J. Balance of carbohydrate and lipid utilization during exercise: the "crossover" concept. <i>J Appl Physiol</i>. 1994;76(6):2253-2261.</li>
+<li>Cole CR et al. Heart-rate recovery immediately after exercise as a predictor of mortality. <i>N Engl J Med</i>. 1999;341(18):1351-1357.</li>
+<li>Coyle EF, González-Alonso J. Cardiovascular drift during prolonged exercise: new perspectives. <i>Exerc Sport Sci Rev</i>. 2001;29(2):88-92.</li>
+<li>Coyle EF et al. Time course of loss of adaptations after stopping prolonged intense endurance training. <i>J Appl Physiol</i>. 1984;57(6):1857-1864.</li>
+<li>Cramer MN, Gagnon D, Laitano O, Crandall CG. Human temperature regulation under heat stress in health, disease, and injury. <i>Physiol Rev</i>. 2022;102(4):1907-1989.</li>
+<li>Damas F et al. Resistance training-induced changes in integrated myofibrillar protein synthesis are related to hypertrophy only after attenuation of muscle damage. <i>J Physiol</i>. 2016;594(18):5209-5222.</li>
+<li>Dempsey JA, Wagner PD. Exercise-induced arterial hypoxemia. <i>J Appl Physiol</i>. 1999;87(6):1997-2006.</li>
+<li>Deng L et al. Impact of altitude training on athletes' aerobic capacity: a systematic review and meta-analysis. <i>Life</i>. 2025;15(2):305.</li>
+<li>Dominelli PB, Sheel AW. Exercise-induced arterial hypoxemia; some answers, more questions. <i>Appl Physiol Nutr Metab</i>. 2019;44(6):571-579.</li>
+<li>Encarnação IGA et al. Effects of detraining on muscle strength and hypertrophy induced by resistance training: a systematic review. <i>Muscles</i>. 2022;1(1):1.</li>
+<li>Gaesser GA, Brooks GA. Metabolic bases of excess post-exercise oxygen consumption: a review. <i>Med Sci Sports Exerc</i>. 1984;16(1):29-43.</li>
+<li>Gastin PB. Energy system interaction and relative contribution during maximal exercise. <i>Sports Med</i>. 2001;31(10):725-741.</li>
+<li>Gore CJ et al. Altitude training and haemoglobin mass from the optimised carbon monoxide rebreathing method determined by a meta-analysis. <i>Br J Sports Med</i>. 2013;47(Suppl 1):i31-i39.</li>
+<li>Henneman E. Relation between size of neurons and their susceptibility to discharge. <i>Science</i>. 1957;126(3287):1345-1347.</li>
+<li>Holloszy JO, Coyle EF. Adaptations of skeletal muscle to endurance exercise and their metabolic consequences. <i>J Appl Physiol</i>. 1984;56(4):831-838.</li>
+<li>Howley ET, Bassett DR, Welch HG. Criteria for maximal oxygen uptake: review and commentary. <i>Med Sci Sports Exerc</i>. 1995;27(9):1292-1301.</li>
+<li>Joyner MJ, Casey DP. Regulation of increased blood flow (hyperemia) to muscles during exercise: a hierarchy of competing physiological needs. <i>Physiol Rev</i>. 2015;95(2):549-601.</li>
+<li>Laginestra FG et al. Stroke volume response during prolonged exercise depends on left ventricular filling: evidence from a β-blockade study. <i>Am J Physiol Regul Integr Comp Physiol</i>. 2023;325(2):R154-R163.</li>
+<li>Levine BD, Stray-Gundersen J. "Living high-training low": effect of moderate-altitude acclimatization with low-altitude training on performance. <i>J Appl Physiol</i>. 1997;83(1):102-112.</li>
+<li>Lopez P et al. Resistance training load effects on muscle hypertrophy and strength gain: systematic review and network meta-analysis. <i>Med Sci Sports Exerc</i>. 2021;53(6):1206-1216.</li>
+<li>MacDougall JD et al. Arterial blood pressure response to heavy resistance exercise. <i>J Appl Physiol</i>. 1985;58(3):785-790.</li>
+<li>Montain SJ, Coyle EF. Influence of graded dehydration on hyperthermia and cardiovascular drift during exercise. <i>J Appl Physiol</i>. 1992;73(4):1340-1350.</li>
+<li>Moritani T, deVries HA. Neural factors versus hypertrophy in the time course of muscle strength gain. <i>Am J Phys Med</i>. 1979;58(3):115-130.</li>
+<li>Morton JP, Fell JM, Gonzalez JT, Hearris MA, Podlogar T, Pugh JN, Wallis GA. From metabolism to medals: contemporary perspectives and revisiting carbohydrate guidelines for fueling endurance athletes during exercise. <i>J Nutr</i>. 2026;156(5):101442.</li>
+<li>Mujika I, Padilla S. Detraining: loss of training-induced physiological and performance adaptations. Part I. <i>Sports Med</i>. 2000;30(2):79-87.</li>
+<li>Nielsen M. Die Regulation der Körpertemperatur bei Muskelarbeit. <i>Skand Arch Physiol</i>. 1938;79:193-230.</li>
+<li>Périard JD, Eijsvogels TMH, Daanen HAM. Exercise under heat stress: thermoregulation, hydration, performance implications, and mitigation strategies. <i>Physiol Rev</i>. 2021;101(4):1873-1979.</li>
+<li>Périard JD, Racinais S, Sawka MN. Adaptations and mechanisms of human heat acclimation. <i>Scand J Med Sci Sports</i>. 2015;25(Suppl 1):20-38.</li>
+<li>Perry BG, Lucas SJE. The acute cardiorespiratory and cerebrovascular response to resistance exercise. <i>Sports Med Open</i>. 2021;7:36. doi:10.1186/s40798-021-00314-w.</li>
+<li>Peters CM, Dempsey JA, Hopkins SR, Sheel AW. Is the lung built for exercise? Advances and unresolved questions. <i>Med Sci Sports Exerc</i>. 2023;55(12):2143-2159.</li>
+<li>Poole DC, Jones AM. Oxygen uptake kinetics. <i>Compr Physiol</i>. 2012;2(2):933-996.</li>
+<li>Poole DC, Jones AM. Measurement of the maximum oxygen uptake V̇O₂max: V̇O₂peak is no longer acceptable. <i>J Appl Physiol</i>. 2017;122(4):997-1002.</li>
+<li>Poole DC, Rossiter HB, Brooks GA, Gladden LB. The anaerobic threshold: 50+ years of controversy. <i>J Physiol</i>. 2021;599(3):737-767.</li>
+<li>Qiu S et al. Heart rate recovery and risk of cardiovascular events and all-cause mortality: a meta-analysis of prospective cohort studies. <i>J Am Heart Assoc</i>. 2017;6(5):e005505.</li>
+<li>Refalo MC, Helms ER, Trexler ET, Hamilton DL, Fyfe JJ. Influence of resistance training proximity-to-failure on skeletal muscle hypertrophy: a systematic review with meta-analysis. <i>Sports Med</i>. 2023;53(3):649-665.</li>
+<li>Robergs RA, Ghiasvand F, Parker D. Biochemistry of exercise-induced metabolic acidosis. <i>Am J Physiol Regul Integr Comp Physiol</i>. 2004;287(3):R502-R516.</li>
+<li>Robinson ZP et al. Exploring the dose–response relationship between estimated resistance training proximity to failure, strength gain, and muscle hypertrophy: a series of meta-regressions. <i>Sports Med</i>. 2024.</li>
+<li>Rowell LB. Human cardiovascular adjustments to exercise and thermal stress. <i>Physiol Rev</i>. 1974;54(1):75-159.</li>
+<li>Sale DG. Neural adaptation to resistance training. <i>Med Sci Sports Exerc</i>. 1988;20(5 Suppl):S135-S145.</li>
+<li>Sawka MN et al. American College of Sports Medicine position stand: exercise and fluid replacement. <i>Med Sci Sports Exerc</i>. 2007;39(2):377-390.</li>
+<li>Schoenfeld BJ et al. Longer interset rest periods enhance muscle strength and hypertrophy in resistance-trained men. <i>J Strength Cond Res</i>. 2016;30(7):1805-1812.</li>
+<li>Schoenfeld BJ et al. Strength and hypertrophy adaptations between low- vs. high-load resistance training: a systematic review and meta-analysis. <i>J Strength Cond Res</i>. 2017;31(12):3508-3523.</li>
+<li>Singer A et al. Give it a rest: a systematic review with Bayesian meta-analysis on the effect of inter-set rest interval duration on muscle hypertrophy. <i>Front Sports Act Living</i>. 2024;6:1429789.</li>
+<li>Škarabot J, Brownstein CG, Casolo A, Del Vecchio A, Ansdell P. The knowns and unknowns of neural adaptations to resistance training. <i>Eur J Appl Physiol</i>. 2021;121(3):675-685.</li>
+<li>Souissi A et al. A new perspective on cardiovascular drift during prolonged exercise. <i>Life Sci</i>. 2021;287:120109.</li>
+<li>Spencer M et al. Metabolism and performance in repeated cycle sprints: active versus passive recovery. <i>Med Sci Sports Exerc</i>. 2006;38(8):1492-1499.</li>
+<li>Tanaka H, Monahan KD, Seals DR. Age-predicted maximal heart rate revisited. <i>J Am Coll Cardiol</i>. 2001;37(1):153-156.</li>
+<li>Wehrlin JP, Hallén J. Linear decrease in VO₂max and performance with increasing altitude in endurance athletes. <i>Eur J Appl Physiol</i>. 2006;96(4):404-412.</li>
+</ul>
+<h3>Como o modelo funciona</h3>
+<p class="sub">Cada variável é calculada por equações simples, calibradas em faixas típicas da literatura para um homem de 20 anos e 70 kg (mulher: 60 kg). VO₂máx 42 mL/kg/min sedentário e 60 treinado; FCmáx por Tanaka; limiares em 50 e 75% (sedentário) ou 65 e 85% (treinado) do VO₂máx; curva da Hb pela equação de Hill (n = 2,7, P50 = 26,8 mmHg). Os hormônios são índices qualitativos. É uma ferramenta para entender direção e mecanismo, não para prescrever.</p>
+</div></section></div>
+
+<div id="tour" hidden role="dialog" aria-label="Apresentação guiada"></div>
+<footer class="band"><div class="wrap">Fisiologia em Ação · modelo didático com valores aproximados, para estudo de fisiologia do exercício.</div></footer>
+
+<script src="js/core.js"></script>
+<script src="js/figs.js"></script>
+<script src="js/model.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/teste.js"></script>
+<script src="js/cinetica.js"></script>
+<script src="js/energia.js"></script>
+<script src="js/hb.js"></script>
+<script src="js/adapt.js"></script>
+<script src="js/forca.js"></script>
+<script src="js/session.js"></script>
+<script src="js/systems.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/home.js"></script>
+<script src="js/tour.js"></script>
+<script src="js/ia.js"></script>
+</body>
+</html>
