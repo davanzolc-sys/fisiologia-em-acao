@@ -91,7 +91,7 @@ async function send(text) {
     hist.pop();
     const lim = /limite|429/i.test(e.message);
     wait.classList.add('err');
-    wait.innerHTML = (lim ? 'A IA do site atingiu o limite de uso por agora. ' : 'O chat do site não está disponível aqui. ') + 'Você pode mandar a mesma pergunta, com o contexto da tela, para outra IA:'
+    wait.innerHTML = (lim ? 'A IA do site atingiu o limite de uso por agora. ' : 'O chat do site não conseguiu responder agora. ') + (lim ? '' : `<small class="ia-det">(${esc(String(e.name === 'AbortError' ? 'demorou demais' : e.message)).slice(0, 220)})</small> `) + 'Você pode mandar a mesma pergunta, com o contexto da tela, para outra IA:'
       + `<div class="ia-ext in"><button class="lnk" data-ia="chatgpt" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no ChatGPT</button><button class="lnk" data-ia="claude" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no Claude</button></div>`;
   }
   clearTimeout(st); clearTimeout(to); busy = false; log.scrollTop = log.scrollHeight;

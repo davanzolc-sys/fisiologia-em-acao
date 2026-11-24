@@ -90,6 +90,15 @@ async function pubmed(query) {
 
 // ---------- handler ----------
 export default async (req) => {
+  if (req.method === 'GET') {
+    // diagnóstico: /api/ia?teste=1
+    const info = {funcao: 'ok', gemini_key: !!env('GEMINI_API_KEY'), claude_key: !!env('ANTHROPIC_API_KEY'), modelo: env('ANTHROPIC_API_KEY') ? (env('ANTHROPIC_MODEL') || 'claude-sonnet-5-5') : (env('GEMINI_MODEL') || 'gemini-flash-latest')};
+    if (new URL(req.url).searchParams.get('teste')) {
+      try { info.ia = await llm('Responda só: ok', [{role: 'user', text: 'teste'}], {max: 50}) || '(vazio)'; } catch (e) { info.ia_erro = e.message; }
+      try { info.pubmed = (await esearch('cardiovascular drift exercise', 2)).length + ' artigos'; } catch (e) { info.pubmed_erro = e.message; }
+    }
+    return json(info);
+  }
   if (req.method !== 'POST') return json({error: 'Use POST'}, 405);
   if (!env('GEMINI_API_KEY') && !env('ANTHROPIC_API_KEY')) return json({error: 'Chave da IA não configurada'}, 503);
   let body; try { body = await req.json(); } catch { return json({error: 'Pedido inválido'}, 400); }
