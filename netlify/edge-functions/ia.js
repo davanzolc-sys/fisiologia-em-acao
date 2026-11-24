@@ -48,21 +48,23 @@ async function flashModels(key) {
     return m;
   } catch { return []; }
 }
-async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
+async function gemini(system, msgs, {jsonOut = false, max = 3000, leve = false} = {}) {
   // tenta o modelo principal e, se estiver sobrecarregado ou sem cota, outros modelos do Gemini
   const key = env('GEMINI_API_KEY');
   // ordem: modelo principal, Flash estáveis mais novos, e só depois os Lite (mais rápidos, porém mais simples)
   const list = await flashModels(key), full = list.filter(m => !/lite/.test(m)), lite = list.filter(m => /lite/.test(m));
-  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', ...full.slice(0, 3), 'gemini-flash-lite-latest', ...lite.slice(0, 1)])];
+  const main = [env('GEMINI_MODEL') || 'gemini-flash-latest', ...full.slice(0, 3)], light = ['gemini-flash-lite-latest', ...lite.slice(0, 2)];
+  const models = [...new Set(leve ? [...light, ...main.slice(0, 1)] : [...main, ...light.slice(0, 1)])];
   const body = JSON.stringify({
     systemInstruction: {parts: [{text: system}]},
     contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
     generationConfig: {temperature: jsonOut ? 0 : 0.35, maxOutputTokens: max, ...(jsonOut ? {responseMimeType: 'application/json'} : {})}
   });
-  let last = 'erro no Gemini', allQuota = true; const tried = [];
+  let last = 'erro no Gemini', allQuota = true; const tried = []; let quotaMsg = '';
   const order = [...models.filter(m => !(busy.get(m) > Date.now())), ...models.filter(m => busy.get(m) > Date.now())];
   for (const model of order) {
     for (let tent = 0; tent < 2; tent++) {
+      if (tent > 0 && busy.get(model) > Date.now()) break;
       let r, j;
       try {
         r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key}, body});
@@ -74,7 +76,7 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
         last = 'resposta vazia'; allQuota = false; break;
       }
       last = j.error?.message || ('erro ' + r.status); tried.push(model + ':' + r.status);
-      if (r.status === 429) break;                       // sem cota neste modelo: tenta o próximo
+      if (r.status === 429) { quotaMsg = last; break; }  // sem cota neste modelo: tenta o próximo
       allQuota = false;
       if (r.status === 404 || r.status === 400 && /model/i.test(last)) break; // modelo inexistente: próximo
       if (r.status === 401 || r.status === 403 || r.status === 400) throw new Error(last); // chave/pedido inválido
@@ -82,7 +84,7 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
       await wait(900 * (tent + 1));                      // 500/503 sobrecarga: espera e tenta de novo
     }
   }
-  if (allQuota) throw Object.assign(new Error('limite de uso atingido'), {status: 429});
+  if (allQuota) throw Object.assign(new Error('limite de uso atingido'), {status: 429, detail: /minute|per.?min/i.test(quotaMsg) ? 'minuto' : /day|per.?day|daily/i.test(quotaMsg) ? 'dia' : ''});
   throw new Error(last.slice(0, 90) + ' [tentados: ' + [...new Set(tried)].join(', ') + ']');
 }
 async function claude(system, msgs, {max = 3000} = {}) {
@@ -153,10 +155,10 @@ export default async (req) => {
     // 1) planejar a busca
     let arts = [];
     try {
-      const plan = await llm(PLAN, [{role: 'user', text: `Contexto da tela:\n${ctx}\n\nConversa anterior:\n${prev || '(nenhuma)'}\n\nDúvida atual: ${last}`}], {jsonOut: true, max: 300});
+      const plan = await llm(PLAN, [{role: 'user', text: `Contexto da tela:\n${ctx}\n\nConversa anterior:\n${prev || '(nenhuma)'}\n\nDúvida atual: ${last}`}], {jsonOut: true, max: 300, leve: true});
       const p = JSON.parse((plan.match(/\{[\s\S]*\}/) || ['{}'])[0]);
       if (p.buscar !== false && p.query) arts = await pubmed(String(p.query).slice(0, 300));
-    } catch (e) { if (e.status === 429) throw e; arts = []; }
+    } catch (e) { arts = []; } // se a busca falhar (ou faltar cota no modelo leve), responde mesmo assim
 
     // 2) responder com as evidências
     const ev = arts.length
@@ -171,7 +173,7 @@ export default async (req) => {
       .filter(s => cited.has(s.n));
     return json({text, sources});
   } catch (e) {
-    if (e.status === 429) return json({error: 'limite de uso atingido'}, 429);
+    if (e.status === 429) return json({error: 'limite de uso atingido', limite: e.detail || ''}, 429);
     return json({error: 'Falha ao falar com a IA: ' + e.message}, 502);
   }
 };

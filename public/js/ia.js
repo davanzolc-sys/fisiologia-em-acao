@@ -83,7 +83,7 @@ async function send(text) {
   try {
     const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({context: context(), messages: hist.slice(-10)}), signal: ac.signal});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.text) throw new Error(j.error || 'indisponível');
+    if (!r.ok || !j.text) throw Object.assign(new Error(j.error || 'indisponível'), {limite: j.limite});
     hist.push({role: 'model', text: j.text});
     const src = (j.sources || []).map(x => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">[${x.n}] ${esc(x.author || '')}${x.author ? ' et al.' : ''}, ${esc(x.year || '')}</a> — ${esc(x.title || '')} <em>${esc(x.journal || '')}</em>${x.type ? ` · ${esc(x.type)}` : ''}</li>`).join('');
     wait.innerHTML = md(j.text) + (src ? `<div class="ia-src"><b>Fontes (PubMed)</b><ol>${src}</ol></div>` : '');
@@ -91,7 +91,7 @@ async function send(text) {
     hist.pop();
     const lim = /limite|429/i.test(e.message);
     wait.classList.add('err');
-    wait.innerHTML = (lim ? 'A IA do site atingiu o limite de uso por agora. ' : 'O chat do site não conseguiu responder agora. ') + (lim ? '' : `<small class="ia-det">(${esc(String(e.name === 'AbortError' ? 'demorou demais' : e.message)).slice(0, 220)})</small> `) + 'Você pode mandar a mesma pergunta, com o contexto da tela, para outra IA:'
+    wait.innerHTML = (lim ? (e.limite === 'dia' ? 'A IA gratuita do site atingiu o limite de perguntas de hoje (renova durante a madrugada). ' : 'Muitas perguntas ao mesmo tempo: a IA gratuita do site tem um limite por minuto. Espere cerca de 1 minuto e envie de novo. ') : 'O chat do site não conseguiu responder agora. ') + (lim ? '' : `<small class="ia-det">(${esc(String(e.name === 'AbortError' ? 'demorou demais' : e.message)).slice(0, 220)})</small> `) + 'Você pode mandar a mesma pergunta, com o contexto da tela, para outra IA:'
       + `<div class="ia-ext in"><button class="lnk" data-ia="chatgpt" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no ChatGPT</button><button class="lnk" data-ia="claude" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no Claude</button></div>`;
   }
   clearTimeout(st); clearTimeout(to); busy = false; log.scrollTop = log.scrollHeight;
