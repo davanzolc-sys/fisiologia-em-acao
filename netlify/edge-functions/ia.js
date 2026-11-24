@@ -57,7 +57,7 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
     contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
     generationConfig: {temperature: jsonOut ? 0 : 0.35, maxOutputTokens: max, ...(jsonOut ? {responseMimeType: 'application/json'} : {})}
   });
-  let last = 'erro no Gemini', allQuota = true;
+  let last = 'erro no Gemini', allQuota = true; const tried = [];
   const order = [...models.filter(m => !(busy.get(m) > Date.now())), ...models.filter(m => busy.get(m) > Date.now())];
   for (const model of order) {
     for (let tent = 0; tent < 2; tent++) {
@@ -71,7 +71,7 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
         if (t) return t;
         last = 'resposta vazia'; allQuota = false; break;
       }
-      last = j.error?.message || ('erro ' + r.status);
+      last = j.error?.message || ('erro ' + r.status); tried.push(model + ':' + r.status);
       if (r.status === 429) break;                       // sem cota neste modelo: tenta o próximo
       allQuota = false;
       if (r.status === 404 || r.status === 400 && /model/i.test(last)) break; // modelo inexistente: próximo
@@ -81,7 +81,7 @@ async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
     }
   }
   if (allQuota) throw Object.assign(new Error('limite de uso atingido'), {status: 429});
-  throw new Error(last);
+  throw new Error(last.slice(0, 90) + ' [tentados: ' + [...new Set(tried)].join(', ') + ']');
 }
 async function claude(system, msgs, {max = 3000} = {}) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
