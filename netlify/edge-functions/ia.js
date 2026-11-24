@@ -42,7 +42,7 @@ async function flashModels(key) {
     const j = await r.json();
     const m = (j.models || []).filter(x => (x.supportedGenerationMethods || []).includes('generateContent'))
       .map(x => x.name.replace('models/', ''))
-      .filter(n => /flash/.test(n) && !/image|tts|audio|live|embed|exp|preview-\d\d-\d\d|thinking/.test(n))
+      .filter(n => /flash/.test(n) && !/image|tts|audio|live|embed|exp|preview|thinking|omni|latest/.test(n))
       .sort((a, b) => (/lite/.test(a) - /lite/.test(b)) || b.localeCompare(a, undefined, {numeric: true}));
     listCache = {t: Date.now(), m};
     return m;
@@ -51,7 +51,9 @@ async function flashModels(key) {
 async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
   // tenta o modelo principal e, se estiver sobrecarregado ou sem cota, outros modelos do Gemini
   const key = env('GEMINI_API_KEY');
-  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', 'gemini-flash-lite-latest', ...(await flashModels(key))])].slice(0, 6);
+  // ordem: modelo principal, Flash estáveis mais novos, e só depois os Lite (mais rápidos, porém mais simples)
+  const list = await flashModels(key), full = list.filter(m => !/lite/.test(m)), lite = list.filter(m => /lite/.test(m));
+  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', ...full.slice(0, 3), 'gemini-flash-lite-latest', ...lite.slice(0, 1)])];
   const body = JSON.stringify({
     systemInstruction: {parts: [{text: system}]},
     contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
