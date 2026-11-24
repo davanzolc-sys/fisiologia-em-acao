@@ -2,7 +2,7 @@
 (() => {
 const $ = s => document.querySelector(s);
 const clean = t => (t || '').replace(/\s+/g, ' ').trim();
-const API = '/.netlify/functions/ia';
+const API = '/api/ia';
 let lesson = null, hist = [], busy = false;
 
 function context() {
@@ -76,14 +76,17 @@ async function send(text) {
   text = text.trim(); if (!text || busy) return;
   busy = true; q.value = ''; $('#ia-sug').hidden = true;
   add('me', esc(text));
-  const wait = add('bot', '<span class="ia-dots"><i></i><i></i><i></i></span>');
+  const wait = add('bot', '<span class="ia-dots"><i></i><i></i><i></i></span> <small class="ia-st">Buscando artigos no PubMed…</small>');
+  const st = setTimeout(() => { const e = wait.querySelector('.ia-st'); if (e) e.textContent = 'Lendo os resumos e escrevendo a resposta…'; }, 5000);
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), 60000);
   hist.push({role: 'user', text});
   try {
-    const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({context: context(), messages: hist.slice(-10)})});
+    const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({context: context(), messages: hist.slice(-10)}), signal: ac.signal});
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.text) throw new Error(j.error || 'indisponível');
     hist.push({role: 'model', text: j.text});
-    wait.innerHTML = md(j.text);
+    const src = (j.sources || []).map(x => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">[${x.n}] ${esc(x.author || '')}${x.author ? ' et al.' : ''}, ${esc(x.year || '')}</a> — ${esc(x.title || '')} <em>${esc(x.journal || '')}</em>${x.type ? ` · ${esc(x.type)}` : ''}</li>`).join('');
+    wait.innerHTML = md(j.text) + (src ? `<div class="ia-src"><b>Fontes (PubMed)</b><ol>${src}</ol></div>` : '');
   } catch (e) {
     hist.pop();
     const lim = /limite|429/i.test(e.message);
@@ -91,7 +94,7 @@ async function send(text) {
     wait.innerHTML = (lim ? 'A IA do site atingiu o limite de uso por agora. ' : 'O chat do site não está disponível aqui. ') + 'Você pode mandar a mesma pergunta, com o contexto da tela, para outra IA:'
       + `<div class="ia-ext in"><button class="lnk" data-ia="chatgpt" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no ChatGPT</button><button class="lnk" data-ia="claude" data-q="${esc(text).replace(/"/g, '&quot;')}">Abrir no Claude</button></div>`;
   }
-  busy = false; log.scrollTop = log.scrollHeight;
+  clearTimeout(st); clearTimeout(to); busy = false; log.scrollTop = log.scrollHeight;
 }
 
 fab.addEventListener('click', () => pan.hidden ? open() : close());
