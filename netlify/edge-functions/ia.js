@@ -33,10 +33,25 @@ Use "buscar": false só para mensagens sem conteúdo científico (cumprimentos, 
 
 // ---------- provedores de IA ----------
 const busy = new Map(); // modelos sobrecarregados recentemente
+let listCache = null;
+async function flashModels(key) {
+  // pergunta ao Google quais modelos Flash existem nesta conta (cache de 1 h)
+  if (listCache && listCache.t > Date.now() - 3600000) return listCache.m;
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {headers: {'x-goog-api-key': key}});
+    const j = await r.json();
+    const m = (j.models || []).filter(x => (x.supportedGenerationMethods || []).includes('generateContent'))
+      .map(x => x.name.replace('models/', ''))
+      .filter(n => /flash/.test(n) && !/image|tts|audio|live|embed|exp|preview-\d\d-\d\d|thinking/.test(n))
+      .sort((a, b) => (/lite/.test(a) - /lite/.test(b)) || b.localeCompare(a, undefined, {numeric: true}));
+    listCache = {t: Date.now(), m};
+    return m;
+  } catch { return []; }
+}
 async function gemini(system, msgs, {jsonOut = false, max = 3000} = {}) {
   // tenta o modelo principal e, se estiver sobrecarregado ou sem cota, outros modelos do Gemini
   const key = env('GEMINI_API_KEY');
-  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash'])];
+  const models = [...new Set([env('GEMINI_MODEL') || 'gemini-flash-latest', 'gemini-flash-lite-latest', ...(await flashModels(key))])].slice(0, 6);
   const body = JSON.stringify({
     systemInstruction: {parts: [{text: system}]},
     contents: msgs.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.text}]})),
@@ -117,6 +132,7 @@ export default async (req) => {
     // diagnóstico: /api/ia?teste=1
     const info = {funcao: 'ok', gemini_key: !!env('GEMINI_API_KEY'), claude_key: !!env('CLAUDE_API_KEY'), modelo: useClaude() ? (env('CLAUDE_MODEL') || 'claude-sonnet-5-5') : (env('GEMINI_MODEL') || 'gemini-flash-latest')};
     if (new URL(req.url).searchParams.get('teste')) {
+      if (!useClaude()) info.modelos_flash = await flashModels(env('GEMINI_API_KEY'));
       try { info.ia = await llm('Responda só: ok', [{role: 'user', text: 'teste'}], {max: 50}) || '(vazio)'; } catch (e) { info.ia_erro = e.message; }
       try { info.pubmed = (await esearch('cardiovascular drift exercise', 2)).length + ' artigos'; } catch (e) { info.pubmed_erro = e.message; }
     }
