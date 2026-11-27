@@ -74,10 +74,10 @@ function drawKidney(svg, f) {
 const VIEWS = {
 geral: {c: 'var(--ink)', mech: false, t: 'O corpo inteiro durante o treino', sub: 'Rode a sessão e veja todos os sistemas trabalhando juntos. Toque num órgão para ir à aba dele.', pic: 'body',
   charts: [
-    {t: 'Frequência cardíaca (bpm)', s: [{k: 'fc', color: 'var(--red)'}]},
-    {t: 'Temperatura central (°C)', s: [{k: 'tc', color: 'var(--plum)'}], o: {yDec: 1}},
-    {t: 'Glicogênio (% do inicial)', s: [{k: 'glyMp', color: 'var(--amber)'}, {k: 'glyLp', color: 'var(--red2)', dash: '6 4'}], o: {yMin: 0, yMax: 100}, leg: [['Músculo', 'var(--amber)'], ['Fígado', 'var(--red2)']]},
-    {t: 'Suor perdido e água bebida (L)', s: [{k: 'sweat', color: 'var(--teal)'}, {k: 'drunk', color: 'var(--blue)', dash: '6 4'}], o: {yMin: 0}, leg: [['Suor', 'var(--teal)'], ['Bebida', 'var(--blue)']], adv: 1}
+    {ex: 'fc', t: 'Frequência cardíaca (bpm)', s: [{k: 'fc', color: 'var(--red)'}]},
+    {ex: 'tc', t: 'Temperatura central (°C)', s: [{k: 'tc', color: 'var(--plum)'}], o: {yDec: 1}},
+    {ex: 'gly', t: 'Glicogênio (% do inicial)', s: [{k: 'glyMp', color: 'var(--amber)'}, {k: 'glyLp', color: 'var(--red2)', dash: '6 4'}], o: {yMin: 0, yMax: 100}, leg: [['Músculo', 'var(--amber)'], ['Fígado', 'var(--red2)']]},
+    {ex: 'swbal', t: 'Suor perdido e água bebida (L)', s: [{k: 'sweat', color: 'var(--teal)'}, {k: 'drunk', color: 'var(--blue)', dash: '6 4'}], o: {yMin: 0}, leg: [['Suor', 'var(--teal)'], ['Bebida', 'var(--blue)']], adv: 1}
   ],
   kpi: f => [['Fase', f.fase, f.ex ? (f.int > 100 ? 'esforço máximo' : f.int + '% do VO₂máx') : 'parado'], ['Gasto até agora', nf(f.choT * 4.1 + f.fatT * 9.3, 0) + ' kcal', nf(f.kcal, 1) + ' kcal/min agora']],
   txt: f => [
@@ -90,11 +90,11 @@ geral: {c: 'var(--ink)', mech: false, t: 'O corpo inteiro durante o treino', sub
     `<b>Hormônios:</b> adrenalina ${f.adr > 40 ? 'alta' : f.adr > 12 ? 'subindo' : 'baixa'}, insulina ${f.ins < 35 ? 'em queda' : 'perto do normal'}${f.cort > 50 ? ', cortisol elevado' : ''}.`]},
 coracao: {fig: 'coracao', c: 'var(--red)', mech: true, t: 'Coração e circulação', sub: 'Para onde vai o sangue em cada momento do treino.', pic: 'flow',
   charts: [
-    {t: 'Frequência cardíaca (bpm)', s: [{k: 'fc', color: 'var(--red)'}]},
-    {t: 'Débito cardíaco (L/min)', s: [{k: 'q', color: 'var(--red2)'}], o: {yMin: 0}},
-    {t: 'Volume sistólico (mL)', s: [{k: 'vs', color: 'var(--plum)'}], adv: 1},
-    {t: 'Pressão arterial (mmHg)', s: [{k: 'pas', color: 'var(--red)'}, {k: 'pad', color: 'var(--blue)'}], leg: [['Sistólica', 'var(--red)'], ['Diastólica', 'var(--blue)']]},
-    {t: 'Distribuição do sangue (L/min)', s: [{k: 'mus', color: 'var(--red)'}, {k: 'pele', color: 'var(--amber)'}, {k: 'visc', color: 'var(--plum)'}], o: {yMin: 0}, leg: [['Músculos', 'var(--red)'], ['Pele', 'var(--amber)'], ['Vísceras', 'var(--plum)']]}
+    {ex: 'fc', t: 'Frequência cardíaca (bpm)', s: [{k: 'fc', color: 'var(--red)'}]},
+    {ex: 'q', t: 'Débito cardíaco (L/min)', s: [{k: 'q', color: 'var(--red2)'}], o: {yMin: 0}},
+    {ex: 'vs', t: 'Volume sistólico (mL)', s: [{k: 'vs', color: 'var(--plum)'}], adv: 1},
+    {ex: 'pa', t: 'Pressão arterial (mmHg)', s: [{k: 'pas', color: 'var(--red)'}, {k: 'pad', color: 'var(--blue)'}], leg: [['Sistólica', 'var(--red)'], ['Diastólica', 'var(--blue)']]},
+    {ex: 'distr', t: 'Distribuição do sangue (L/min)', s: [{k: 'mus', color: 'var(--red)'}, {k: 'pele', color: 'var(--amber)'}, {k: 'visc', color: 'var(--plum)'}], o: {yMin: 0}, leg: [['Músculos', 'var(--red)'], ['Pele', 'var(--amber)'], ['Vísceras', 'var(--plum)']]}
   ],
   kpi: f => [['FC', nf(f.fc, 0) + ' bpm'], ['Débito cardíaco', nf(f.q, 1) + ' L/min'], ['Volume sistólico', nf(f.vs, 0) + ' mL', '', 1], ['Pressão', nf(f.pas, 0) + '/' + nf(f.pad, 0) + ' mmHg']],
   txt: f => {
@@ -107,10 +107,10 @@ coracao: {fig: 'coracao', c: 'var(--red)', mech: true, t: 'Coração e circulaç
   }},
 respiracao: {fig: 'pulmoes', c: 'var(--blue)', mech: true, t: 'Respiração', sub: 'Os pulmões inflam no ritmo e na profundidade calculados para cada momento.', pic: 'lungs',
   charts: [
-    {t: 'Ventilação (L/min)', s: [{k: 've', color: 'var(--blue)'}], o: {yMin: 0}},
-    {t: 'Frequência respiratória (rpm)', s: [{k: 'fr', color: 'var(--teal)'}]},
-    {t: 'Volume corrente (L)', s: [{k: 'vt', color: 'var(--plum)'}], o: {yDec: 1}, adv: 1},
-    {t: 'Saturação de O₂ (%)', s: [{k: 'spo2', color: 'var(--red)'}], o: {yMax: 100}, adv: 1}
+    {ex: 've', t: 'Ventilação (L/min)', s: [{k: 've', color: 'var(--blue)'}], o: {yMin: 0}},
+    {ex: 'fr', t: 'Frequência respiratória (rpm)', s: [{k: 'fr', color: 'var(--teal)'}]},
+    {ex: 'vt', t: 'Volume corrente (L)', s: [{k: 'vt', color: 'var(--plum)'}], o: {yDec: 1}, adv: 1},
+    {ex: 'spo2', t: 'Saturação de O₂ (%)', s: [{k: 'spo2', color: 'var(--red)'}], o: {yMax: 100}, adv: 1}
   ],
   kpi: f => [['Ventilação', nf(f.ve, 0) + ' L/min'], ['Respirações', nf(f.fr, 0) + ' por min'], ['Volume por respiração', nf(f.vt, 2) + ' L', '', 1], ['SpO₂', nf(f.spo2, 0) + '%', '', 1]],
   txt: f => [FA.simple ? FA.WS.ve : `No exercício leve a ventilação sobe mais pelo volume de cada respiração; no pesado, pela frequência. Acima do 2º limiar a ventilação dispara para eliminar o CO₂ extra do tamponamento da acidose.`,
@@ -119,10 +119,10 @@ respiracao: {fig: 'pulmoes', c: 'var(--blue)', mech: true, t: 'Respiração', su
     !f.ex && f.t > 1 && `Depois do exercício a ventilação continua alta por alguns minutos: repõe O₂ e elimina CO₂ (EPOC).`]},
 combustivel: {fig: 'musculo', c: 'var(--amber)', mech: true, t: 'Combustível', sub: 'Quanto tem em cada estoque e com que velocidade está sendo gasto. *Glicogênio dos músculos que estão trabalhando.', pic: 'fuel',
   charts: [
-    {t: 'Combustível queimado (g/min)', s: [{k: 'choR', color: 'var(--amber)'}, {k: 'fatR', color: 'var(--blue)'}], o: {yMin: 0, yDec: 1}, leg: [['Carboidrato', 'var(--amber)'], ['Gordura', 'var(--blue)']]},
-    {t: 'Glicogênio (% do inicial)', s: [{k: 'glyMp', color: 'var(--amber)'}, {k: 'glyLp', color: 'var(--red2)', dash: '6 4'}], o: {yMin: 0, yMax: 100}, leg: [['Músculo', 'var(--amber)'], ['Fígado', 'var(--red2)']]},
-    {t: 'Glicemia (mg/dL)', s: [{k: 'gli', color: 'var(--red)'}], o: {yMin: 55, yMax: 125, hlines: [{y: 70, label: 'hipoglicemia', color: 'var(--red2)'}]}},
-    {t: 'Lactato (mmol/L)', s: [{k: 'lac', color: 'var(--amber)'}], o: {yMin: 0}, adv: 1}
+    {ex: 'comb', t: 'Combustível queimado (g/min)', s: [{k: 'choR', color: 'var(--amber)'}, {k: 'fatR', color: 'var(--blue)'}], o: {yMin: 0, yDec: 1}, leg: [['Carboidrato', 'var(--amber)'], ['Gordura', 'var(--blue)']]},
+    {ex: 'gly', t: 'Glicogênio (% do inicial)', s: [{k: 'glyMp', color: 'var(--amber)'}, {k: 'glyLp', color: 'var(--red2)', dash: '6 4'}], o: {yMin: 0, yMax: 100}, leg: [['Músculo', 'var(--amber)'], ['Fígado', 'var(--red2)']]},
+    {ex: 'gli', t: 'Glicemia (mg/dL)', s: [{k: 'gli', color: 'var(--red)'}], o: {yMin: 55, yMax: 125, hlines: [{y: 70, label: 'hipoglicemia', color: 'var(--red2)'}]}},
+    {ex: 'lac', t: 'Lactato (mmol/L)', s: [{k: 'lac', color: 'var(--amber)'}], o: {yMin: 0}, adv: 1}
   ],
   kpi: f => [['Carboidrato / gordura', nf(f.cho, 0) + '% / ' + nf(100 - f.cho, 0) + '%'], ['Gasto agora', nf(f.kcal, 1) + ' kcal/min'], ['Carboidrato usado', nf(f.choT, 0) + ' g', '', 1], ['Gordura usada', nf(f.fatT, 0) + ' g', '', 1]],
   txt: f => [FA.simple ? `O corpo queima carboidrato e gordura ao mesmo tempo. Quanto mais forte o exercício, mais carboidrato. O glicogênio do músculo é o tanque que acaba primeiro.` : `O carboidrato vem do glicogênio muscular e da glicose do sangue, que o fígado repõe. Em intensidade alta o glicogênio muscular é o principal; com o tempo a glicose do sangue e a gordura ganham espaço (Brooks e Mercier, 1994; Brooks, 2020).`,
@@ -133,10 +133,10 @@ combustivel: {fig: 'musculo', c: 'var(--amber)', mech: true, t: 'Combustível', 
     `A gordura corporal tem energia para dias de exercício. O limite não é ela: é a velocidade com que ela consegue ser usada.`]},
 calor: {fig: 'calor', c: 'var(--plum)', mech: true, t: 'Calor e água', sub: 'De onde vem o calor e por onde ele sai, em watts. O que não sai fica no corpo e a temperatura sobe.', pic: 'heat',
   charts: [
-    {t: 'Temperatura central (°C)', s: [{k: 'tc', color: 'var(--red)'}], o: {yDec: 1, hlines: [{y: 39.5, label: '39,5 °C', color: 'var(--red2)'}]}},
-    {t: 'Taxa de suor (L/h)', s: [{k: 'sw', color: 'var(--teal)'}], o: {yMin: 0, yDec: 1}},
-    {t: 'Suor perdido e água bebida (L)', s: [{k: 'sweat', color: 'var(--teal)'}, {k: 'drunk', color: 'var(--blue)', dash: '6 4'}], o: {yMin: 0, yDec: 1}, leg: [['Suor', 'var(--teal)'], ['Bebida', 'var(--blue)']]},
-    {t: 'Desidratação (% do peso)', s: [{k: 'desid', color: 'var(--red2)'}], o: {yMin: 0, yDec: 1, hlines: [{y: 2, label: '2%', color: 'var(--red2)'}]}, adv: 1}
+    {ex: 'tc', t: 'Temperatura central (°C)', s: [{k: 'tc', color: 'var(--red)'}], o: {yDec: 1, hlines: [{y: 39.5, label: '39,5 °C', color: 'var(--red2)'}]}},
+    {ex: 'sw', t: 'Taxa de suor (L/h)', s: [{k: 'sw', color: 'var(--teal)'}], o: {yMin: 0, yDec: 1}},
+    {ex: 'swbal', t: 'Suor perdido e água bebida (L)', s: [{k: 'sweat', color: 'var(--teal)'}, {k: 'drunk', color: 'var(--blue)', dash: '6 4'}], o: {yMin: 0, yDec: 1}, leg: [['Suor', 'var(--teal)'], ['Bebida', 'var(--blue)']]},
+    {ex: 'desid', t: 'Desidratação (% do peso)', s: [{k: 'desid', color: 'var(--red2)'}], o: {yMin: 0, yDec: 1, hlines: [{y: 2, label: '2%', color: 'var(--red2)'}]}, adv: 1}
   ],
   kpi: f => [['Temperatura central', nf(f.tc, 1) + ' °C'], ['Suor', nf(f.sw, 1) + ' L/h'], ['Desidratação', nf(f.desid, 1) + '%', 'do peso'], ['Suor que não evapora', nf(f.hDrip, 0) + ' W', 'escorre sem resfriar', 1]],
   txt: f => [FA.simple ? FA.WS.sw : `Uns 75 a 80% da energia vira calor. O corpo perde calor por convecção e radiação (se o ar está mais frio que a pele), pela respiração e pela evaporação do suor. Com o ar perto da temperatura da pele, só o suor resolve.`,
@@ -146,10 +146,10 @@ calor: {fig: 'calor', c: 'var(--plum)', mech: true, t: 'Calor e água', sub: 'De
     !f.ex && f.t > 1 && `Parado, a produção de calor cai na hora, mas o corpo leva vários minutos para esfriar.`]},
 hormonios: {c: 'var(--red2)', mech: true, t: 'Hormônios', sub: 'Quais glândulas estão trabalhando e o que cada hormônio faz no treino. Valores em índice de 0 a 100.', pic: 'glands',
   charts: [
-    {t: 'Adrenalina e noradrenalina', s: [{k: 'adr', color: 'var(--red)'}, {k: 'na', color: 'var(--amber)'}], o: {yMin: 0, yMax: 100}, leg: [['Adrenalina', 'var(--red)'], ['Noradrenalina', 'var(--amber)']]},
-    {t: 'Insulina e glucagon', s: [{k: 'ins', color: 'var(--blue)'}, {k: 'glu', color: 'var(--plum)'}], o: {yMin: 0, yMax: 100}, leg: [['Insulina', 'var(--blue)'], ['Glucagon', 'var(--plum)']]},
-    {t: 'Cortisol e GH', s: [{k: 'cort', color: 'var(--red2)'}, {k: 'gh', color: 'var(--teal)'}], o: {yMin: 0, yMax: 100}, leg: [['Cortisol', 'var(--red2)'], ['GH', 'var(--teal)']], adv: 1},
-    {t: 'ADH e aldosterona', s: [{k: 'adh', color: 'var(--blue)'}, {k: 'aldo', color: 'var(--amber)'}], o: {yMin: 0, yMax: 100}, leg: [['ADH', 'var(--blue)'], ['Aldosterona', 'var(--amber)']]}
+    {ex: 'cat', t: 'Adrenalina e noradrenalina', s: [{k: 'adr', color: 'var(--red)'}, {k: 'na', color: 'var(--amber)'}], o: {yMin: 0, yMax: 100}, leg: [['Adrenalina', 'var(--red)'], ['Noradrenalina', 'var(--amber)']]},
+    {ex: 'insglu', t: 'Insulina e glucagon', s: [{k: 'ins', color: 'var(--blue)'}, {k: 'glu', color: 'var(--plum)'}], o: {yMin: 0, yMax: 100}, leg: [['Insulina', 'var(--blue)'], ['Glucagon', 'var(--plum)']]},
+    {ex: 'cortgh', t: 'Cortisol e GH', s: [{k: 'cort', color: 'var(--red2)'}, {k: 'gh', color: 'var(--teal)'}], o: {yMin: 0, yMax: 100}, leg: [['Cortisol', 'var(--red2)'], ['GH', 'var(--teal)']], adv: 1},
+    {ex: 'adhaldo', t: 'ADH e aldosterona', s: [{k: 'adh', color: 'var(--blue)'}, {k: 'aldo', color: 'var(--amber)'}], o: {yMin: 0, yMax: 100}, leg: [['ADH', 'var(--blue)'], ['Aldosterona', 'var(--amber)']]}
   ],
   kpi: () => [],
   txt: f => [FA.simple ? `No exercício o corpo entra em "modo ação": hormônios que liberam combustível sobem (adrenalina, glucagon, cortisol) e a insulina cai. Hormônios que seguram água (ADH, aldosterona) também sobem.` : `O sistema nervoso simpático e a suprarrenal respondem em segundos; o eixo hipotálamo-hipófise-suprarrenal (cortisol) e o GH levam minutos e sobem mais em esforço intenso ou longo. Insulina cai, glucagon sobe: o fígado libera glicose.`,
@@ -158,11 +158,11 @@ hormonios: {c: 'var(--red2)', mech: true, t: 'Hormônios', sub: 'Quais glândula
     !f.ex && f.t > 1 && `Ao parar, adrenalina e noradrenalina caem em minutos; cortisol, GH e ADH continuam altos por mais tempo.`]},
 rins: {fig: 'rim', c: 'var(--teal)', mech: true, t: 'Rins, urina e digestão', sub: 'O rim recebe menos sangue e economiza água; a digestão fica em segundo plano.', pic: 'kidney',
   charts: [
-    {t: 'Fluxo sanguíneo renal (L/min)', s: [{k: 'rbf', color: 'var(--red)'}], o: {yMin: 0, yDec: 1}},
-    {t: 'Produção de urina (mL/min)', s: [{k: 'uflow', color: 'var(--amber)'}], o: {yMin: 0, yDec: 1}},
-    {t: 'Concentração da urina (mOsm/kg)', s: [{k: 'uosm', color: 'var(--plum)'}], adv: 1},
-    {t: 'Filtração glomerular (mL/min)', s: [{k: 'gfr', color: 'var(--teal)'}], adv: 1},
-    {t: 'Esvaziamento do estômago (% do normal)', s: [{k: 'gast', color: 'var(--amber)'}], o: {yMin: 0, yMax: 105}}
+    {ex: 'rbf', t: 'Fluxo sanguíneo renal (L/min)', s: [{k: 'rbf', color: 'var(--red)'}], o: {yMin: 0, yDec: 1}},
+    {ex: 'uflow', t: 'Produção de urina (mL/min)', s: [{k: 'uflow', color: 'var(--amber)'}], o: {yMin: 0, yDec: 1}},
+    {ex: 'uosm', t: 'Concentração da urina (mOsm/kg)', s: [{k: 'uosm', color: 'var(--plum)'}], adv: 1},
+    {ex: 'gfr', t: 'Filtração glomerular (mL/min)', s: [{k: 'gfr', color: 'var(--teal)'}], adv: 1},
+    {ex: 'gast', t: 'Esvaziamento do estômago (% do normal)', s: [{k: 'gast', color: 'var(--amber)'}], o: {yMin: 0, yMax: 105}}
   ],
   kpi: f => [['Fluxo renal', nf(f.rbf, 2) + ' L/min', pctQ(f, 'rbf') + ' do débito'], ['Urina', nf(f.uflow, 1) + ' mL/min'], ['Cor da urina', `<em class="swatch" style="background:${ucolHex(f.ucol)}"></em>${Math.round(f.ucol)} de 8`, 'escala de Armstrong'], ['TFG', nf(f.gfr, 0) + ' mL/min', '', 1]],
   txt: f => [FA.simple ? `No exercício os rins recebem menos sangue e produzem menos urina: o corpo guarda água. Urina escura no fim do treino é sinal de que faltou água.` : `O simpático contrai as arteríolas renais: o fluxo cai muito, a filtração cai menos (a fração filtrada aumenta). ADH e aldosterona fazem o rim reabsorver água e sódio.`,
@@ -182,25 +182,47 @@ const GL = [
   ['coracao', 'Nervos simpáticos', [['Noradrenalina', 'na', 'contrai vasos das vísceras, acelera o coração']]]
 ];
 
+/* "Agora" específico de alguns gráficos (além da tendência) */
+const AG = {
+  fc: (f, p) => f.ex && f.t > 20 && f.vs < p.vs - 2 && f.fc > p.fc + 2 ? 'Mesmo ritmo e FC subindo com volume sistólico caindo: deriva cardiovascular.' : !f.ex && f.t > 1 ? 'Recuperação: a queda rápida do 1º minuto é o freio vagal voltando.' : '',
+  tc: f => f.tc >= 39.5 ? 'Acima de 39,5 °C: zona de risco, o desempenho cai.' : f.tc >= 38.5 ? 'Temperatura alta, mas ainda tolerável para atletas.' : '',
+  gly: f => f.wall ? 'Glicogênio muscular zerado: na vida real o ritmo despencaria.' : f.glyMp < 25 && f.ex ? 'Glicogênio muscular baixo: perto de "bater no muro".' : '',
+  gli: f => f.gli < 70 ? 'Abaixo de 70 mg/dL: hipoglicemia.' : '',
+  lac: f => f.lac > 4 ? 'Acima de ~4 mmol/L: produção maior que a remoção.' : f.lac < 2 && f.ex ? 'Abaixo de 2 mmol/L: abaixo do 1º limiar.' : '',
+  desid: f => f.desid >= 2 ? 'Já passou de 2% do peso: desempenho e termorregulação pioram.' : '',
+  swbal: f => f.desid >= 2 ? 'Faltando água: mais de 2% do peso.' : '',
+  spo2: f => f.spo2 < 94 ? 'Saturação abaixo de 94%: hipoxemia.' : '',
+  gast: f => f.gast < 70 ? 'Estômago lento: géis e bebidas são mais difíceis de tolerar agora.' : '',
+  distr: f => `Músculos recebem ${pctQ(f, 'mus')} do débito agora (repouso: ~20%).`
+};
+const unitOf = c => { const m = c.t.match(/\(([^)]+)\)/); return m ? m[1] : 'índice'; };
+const decOf = (c, v) => c.o && c.o.yDec != null ? c.o.yDec : Math.abs(v) < 10 ? 1 : 0;
+
 function build(name) {
   const v = VIEWS[name], el = $('#v-' + name);
   if (el.dataset.built) return;
   const picHtml = v.pic === 'body' ? `<div class="bodywrap"><div class="blist" id="${name}-bl"></div><div class="bfig" id="${name}-body"></div><div class="blist" id="${name}-br"></div></div>`
     : v.pic === 'glands' ? `<div class="bodywrap g2"><div class="bfig" id="${name}-body"></div><div class="glist" id="${name}-gl"></div></div>`
     : `<div class="fig" style="min-height:${v.pic === 'fuel' ? 330 : 340}px"><svg id="${name}-pic"></svg></div>`;
+  const firstChart = 0;
+  const mech = v.mech ? FA.dw({id: name + '-dmech', t: 'Como funciona', c: v.c, val: v.fig ? 'figura com legendas' : '',
+    body: `<div class="mech${v.fig ? ' has-fig' : ''}">${v.fig ? FA.figHTML(v.fig) : ''}<div><p id="${name}-mech"></p>${v.fig ? '<p class="note">Passe o mouse ou toque nos números para ver cada estrutura.</p>' : ''}</div></div>`}) : '';
+  const charts = v.charts.map((c, i) => FA.dw({id: `${name}-d${i}`, t: c.t.replace(/\s*\([^)]*\)$/, ''), c: v.c, adv: c.adv, open: i === firstChart, leg: c.leg,
+    body: `<div class="fig sm"><svg id="${name}-c${i}"></svg></div>`, ex: Object.assign({}, FA.EXP[c.ex], {a: true})})).join('');
   el.innerHTML = `<div class="sv" style="--c:${v.c}"><div class="sv-head"><h2>${v.t}</h2><p class="sub">${v.sub}</p></div>
     <div class="hero${v.pic === 'body' ? ' stack' : ''}"><div class="card hero-pic">${picHtml}</div>
     <aside class="card now"><h3>Agora</h3><div class="kv" id="${name}-kpi"></div><ul class="now-list" id="${name}-txt"></ul></aside></div>
-    ${v.mech ? `<div class="card mech${v.fig ? ' has-fig' : ''}">${v.fig ? FA.figHTML(v.fig) : ''}<div><h3>Como funciona</h3><p id="${name}-mech"></p>${v.fig ? '<p class="note">Passe o mouse ou toque nos números para ver cada estrutura.</p>' : ''}</div></div>` : ''}
-    <div class="charts">${v.charts.map((c, i) => `<div class="chart${c.adv ? ' adv' : ''}"><h3>${c.t}</h3>${c.leg ? `<div class="legend">${c.leg.map(([n, col]) => `<span style="--c:${col}">${n}</span>`).join('')}</div>` : ''}<div class="fig sm"><svg id="${name}-c${i}"></svg></div></div>`).join('')}</div></div>`;
+    <p class="dws-h">Abra cada item para ver o gráfico e entender o que ele mostra.</p>
+    <div class="dws charts-dw">${mech}${charts}</div></div>`;
   el.dataset.built = 1;
   el.addEventListener('click', e => { const o = e.target.closest('[data-o],[data-go]'); if (!o) return; const g = o.dataset.go || (BODYL.find(b => b[0] === o.dataset.o) || [])[3]; if (g && g !== name) FA.go(g); });
-  FA.observe(el.querySelector('.charts'), () => { if (!el.hidden && SS.D) render(name); });
+  el.querySelectorAll('.dw').forEach(d => d.addEventListener('toggle', () => { if (d.open && SS.D) render(name); }));
+  FA.observe(el.querySelector('.charts-dw'), () => { if (!el.hidden && SS.D) render(name); });
   const pic = $('#' + name + '-pic'); if (pic) FA.observe(pic, () => { if (!el.hidden && SS.D) render(name); });
 }
 function render(name) {
   build(name);
-  const v = VIEWS[name], f = FA.frame();
+  const v = VIEWS[name], f = FA.frame(), fr = SS.D.frames, i0 = fr.indexOf(f), prev = fr[Math.max(0, i0 - 36)];
   $('#' + name + '-kpi').innerHTML = kpi(v.kpi(f));
   if (v.pic === 'body') {
     $('#' + name + '-body').innerHTML = FA.bodyImg(lvl(f), f.fc);
@@ -212,7 +234,17 @@ function render(name) {
     $('#' + name + '-body').innerHTML = FA.glandImg({hipofise: only.hipofise, supra: only.supra, pancreas: only.pancreas, tireoide: .25, rins: f.aldo / 100});
     $('#' + name + '-gl').innerHTML = GL.map(([o, n, hs]) => `<div class="gl"><h4>${n}</h4>${hs.map(([hn, k, d]) => `<div class="hrow"><span>${hn}</span><span class="hb"><i style="width:${f[k]}%"></i></span><b>${nf(f[k], 0)}</b><em>${d}</em></div>`).join('')}</div>`).join('');
   } else PIC[v.pic]($('#' + name + '-pic'), f);
-  v.charts.forEach((c, i) => { if (c.adv && FA.simple) return; FA.tchart($('#' + name + '-c' + i), c.s, {...(c.o || {}), yLabel: (c.o && c.o.yLabel) || (c.t.charAt(0).toLowerCase() + c.t.slice(1) + (/\)$/.test(c.t) ? '' : ' (índice 0–100)'))}); });
+  v.charts.forEach((c, i) => {
+    if (c.adv && FA.simple) return;
+    const u = unitOf(c), names = c.leg ? c.leg.map(l => l[0]) : null;
+    const val = c.s.map((s, j) => `${names ? names[j] + ' ' : ''}<b>${nf(f[s.k], decOf(c, f[s.k]))}</b>`).join(' · ') + (u !== 'índice' ? ' ' + u : '');
+    const d = $(`#${name}-d${i}`);
+    if (d.open) {
+      FA.tchart($('#' + name + '-c' + i), c.s, {...(c.o || {}), yLabel: (c.o && c.o.yLabel) || (c.t.charAt(0).toLowerCase() + c.t.slice(1) + (/\)$/.test(c.t) ? '' : ' (índice 0–100)'))});
+      const extra = AG[c.ex] ? AG[c.ex](f, prev) : '';
+      FA.dwSet(`${name}-d${i}`, val, FA.nowTrend(f, fr, c.s, u === 'índice' ? '' : u, decOf(c, f[c.s[0].k]), names) + (extra ? `<p style="margin-top:8px">${extra}</p>` : ''));
+    } else FA.dwSet(`${name}-d${i}`, val);
+  });
   const items = v.txt(f), mech = v.mech ? items.shift() : null;
   if (mech) $('#' + name + '-mech').innerHTML = mech;
   const live = items.filter(Boolean);

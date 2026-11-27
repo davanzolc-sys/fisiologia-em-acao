@@ -83,7 +83,7 @@ function btns() {
   FA.seg($('#t-segTr'), (T.tr == null ? FA.S.P.tr : T.tr) ? '1' : '0');
   $('#t-play').textContent = T.playing ? 'Pausar' : (T.cur < D.tEnd ? 'Continuar' : 'Rodar o teste');
 }
-$('#t-mode').addEventListener('click', () => { T.guess = !T.guess; T.g = []; T.shown = false; draw(); btns(); });
+$('#t-mode').addEventListener('click', () => { const dq = $('#t-d2'); if (dq) dq.open = true; T.guess = !T.guess; T.g = []; T.shown = false; draw(); btns(); });
 $('#t-check').addEventListener('click', () => { T.shown = true; draw(); btns(); });
 $('#t-again').addEventListener('click', () => { T.g = []; T.shown = false; draw(); btns(); });
 $('#t-segTr').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; T.tr = b.dataset.v === '1'; T.cur = null; T.g = []; T.shown = false; build(); draw(); btns(); });

@@ -85,7 +85,9 @@ svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:ro
 .warn p{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--red) 12%,transparent);font-size:14px}
 .up{color:var(--red)}.dn{color:var(--blue)}.eq{color:var(--mut)}
 .lab{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:28px;align-items:start}
-.systems{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px}
+.systems{display:grid;gap:10px}
+.systems .dw-b{display:block;padding:8px 14px 12px}
+.systems .sys{background:none;border:0;padding:0}
 .sys{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 14px 8px}
 .sys h3{display:flex;align-items:center;gap:8px}
 .sys h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
@@ -123,9 +125,9 @@ select{font:16px "IBM Plex Sans",sans-serif;min-height:44px;padding:0 10px;borde
 .two.even{grid-template-columns:repeat(2,minmax(0,1fr))}
 .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
 .toolbar .seg{min-width:240px}
-.treadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(8em,1fr));gap:2px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.treadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:2px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
 .treadout span{display:block;font-size:13px;color:var(--mut)}
-.treadout b{font:600 22px/1.2 "Barlow Condensed",sans-serif;white-space:nowrap}
+.treadout b{font:600 22px/1.15 "Barlow Condensed",sans-serif;display:block;overflow-wrap:anywhere}
 .treadout .zone{grid-column:1/-1;margin:4px 0 0;font-size:14px;font-weight:600;color:var(--red)}
 #t-guess{min-height:1.5em;font-size:15px}
 .tbl{border-collapse:collapse;width:100%;font-size:15px}
@@ -415,6 +417,39 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 @media(max-width:1000px){.ia-fab{bottom:80px;padding:0 14px}.ia-pan{bottom:140px;right:12px}}
 @media(max-width:600px){.ia-fab span{display:none}.ia-fab{padding:0;width:52px;justify-content:center}}
 @media print{.ia-fab,.ia-pan{display:none}}
+
+/* gavetas */
+.dws-h{margin:22px 0 0;font-size:15px;color:var(--mut)}
+.dw .mech{margin:0}
+.dws{display:grid;gap:12px;margin-top:16px}
+.dw{border:1px solid var(--line2);border-radius:14px;background:var(--bg);overflow:hidden}
+.dw>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 18px;min-height:56px;border-left:4px solid var(--c,var(--red))}
+.dw>summary::-webkit-details-marker{display:none}
+.dw>summary:hover{background:var(--panel)}
+.dw>summary:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.dw-t{font-weight:700;font-size:17px;line-height:1.3}
+.dw-v{margin-left:auto;font-size:14px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+.dw-v b{color:var(--ink);font-weight:600}
+.dw-ch{flex:none;width:10px;height:10px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+.dw[open]>summary .dw-ch{transform:rotate(225deg) translateY(-2px)}
+.dw[open]>summary{border-bottom:1px solid var(--line)}
+.dw-b{padding:16px 18px 18px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+.dw:not(.has-ex) .dw-b{grid-template-columns:minmax(0,1fr)}
+.dw-main>.legend{margin:0 0 4px}
+.dw-main .fig.sm{min-height:250px}
+.ex{background:var(--panel);border-radius:12px;padding:12px 14px}
+.ex-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.ex-tabs button{font:600 13px "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line2);border-radius:999px;padding:6px 10px;min-height:36px;cursor:pointer;white-space:nowrap}
+.ex-tabs button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ex-p{font-size:15px;line-height:1.6}
+.ex-p p{margin:0 0 8px}.ex-p p:last-child{margin:0}
+.ex-p ul{margin:0;padding-left:18px}
+.dw .card{border:0;padding:0;background:none}
+@media(max-width:900px){.dw-b{grid-template-columns:minmax(0,1fr)}}
+.dw{container-type:inline-size}
+@container (max-width:720px){.dw-b{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.ex-tabs button{font-size:12.5px;padding:5px 8px}.dw>summary{padding:12px 14px;flex-wrap:wrap;gap:4px 10px}.dw-v{margin-left:0;order:3;flex-basis:100%;text-align:left}.dw-ch{margin-left:auto}.dw-b{padding:14px}}
+@media print{.dw:not([open]) .dw-b{display:block}}
 </style>
 </head>
 <body>
@@ -516,15 +551,15 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 </div></section>
 <section class="band" style="padding-top:12px"><div class="wrap lab">
 <div>
-<h2>O que mudou em cada sistema</h2>
+<div>
+<h2 style="margin:0 0 4px">O que mudou em cada sistema</h2>
 <p class="sub" id="refline"></p>
 <div class="systems" id="systems"></div>
 <p class="note">Hormônios em índice relativo de 0 a 100 (0 = mínimo, 100 = máximo fisiológico): mostram a direção e o tamanho da resposta, não a concentração.</p>
-<div style="margin-top:28px">
-<div class="cv-head"><h2 style="margin:0">Curva pela intensidade</h2><select id="cv" aria-label="Variável do gráfico"></select></div>
-<p class="sub" style="margin-bottom:4px" id="cvsub"></p>
+<div style="height:10px"></div>
+<div data-dw="s-d2" data-t="Curva pela intensidade" data-ex="s_curva" data-c="var(--red)"><div class="cv-head"><select id="cv" aria-label="Variável do gráfico"></select></div><p class="sub" style="margin-bottom:4px" id="cvsub"></p>
 <div class="fig md"><svg id="csvg"></svg></div>
-<div class="legend"><span>Condições atuais</span><span class="la" id="lgA" hidden>Cenário A</span></div>
+<div class="legend"><span>Condições atuais</span><span class="la" id="lgA" hidden>Cenário A</span></div></div>
 </div>
 </div>
 <aside id="why" aria-live="polite"></aside>
@@ -545,18 +580,16 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <div class="field" style="max-width:520px"><label for="t-scrub">Linha do tempo</label><input type="range" id="t-scrub" min="0" max="1000" value="1000"></div>
 <p id="t-guess"></p>
 <div class="treadout" id="t-read"></div>
-<div class="charts">
-<div class="chart"><h3>VO₂ e VCO₂</h3><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">VCO₂</span></div><div class="fig sm"><svg id="t-c1"></svg></div></div>
-<div class="chart"><h3>Equivalentes ventilatórios</h3><div class="legend"><span>VE/VO₂</span><span style="--c:var(--blue)">VE/VCO₂</span></div><div class="fig sm"><svg id="t-c2" style="cursor:crosshair"></svg></div></div>
-<div class="chart"><h3>Lactato sanguíneo</h3><div class="fig sm"><svg id="t-c3"></svg></div></div>
-<div class="chart"><h3>Frequência cardíaca</h3><div class="fig sm"><svg id="t-c4"></svg></div></div>
-<div class="chart"><h3>Quociente respiratório</h3><div class="fig sm"><svg id="t-c5"></svg></div></div>
-<div class="chart"><h3>Ventilação</h3><div class="fig sm"><svg id="t-c6"></svg></div></div>
+<div class="dws">
+<div data-dw="t-d1" data-t="VO₂ e VCO₂" data-ex="t_vo2" data-open><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">VCO₂</span></div><div class="fig sm"><svg id="t-c1"></svg></div></div>
+<div data-dw="t-d2" data-t="Equivalentes ventilatórios" data-ex="t_eq"><div class="legend"><span>VE/VO₂</span><span style="--c:var(--blue)">VE/VCO₂</span></div><div class="fig sm"><svg id="t-c2" style="cursor:crosshair"></svg></div></div>
+<div data-dw="t-d3" data-t="Lactato sanguíneo" data-ex="t_lac"><div class="fig sm"><svg id="t-c3"></svg></div></div>
+<div data-dw="t-d4" data-t="Frequência cardíaca" data-ex="t_fc"><div class="fig sm"><svg id="t-c4"></svg></div></div>
+<div data-dw="t-d5" data-t="Quociente respiratório" data-ex="t_rq"><div class="fig sm"><svg id="t-c5"></svg></div></div>
+<div data-dw="t-d6" data-t="Ventilação" data-ex="t_ve"><div class="fig sm"><svg id="t-c6"></svg></div></div>
 </div>
-<div class="two" style="margin-top:24px">
-<div id="t-sum"></div>
-<div class="card"><h3>Como achar os limiares</h3>
-<p><b>VT1 (limiar aeróbio):</b> o VE/VO₂ para de cair e começa a subir, enquanto o VE/VCO₂ fica estável. O CO₂ extra do bicarbonato começa a aparecer. Coincide mais ou menos com o lactato saindo do repouso (~2 mmol/L).</p>
+<div id="t-sum" style="margin-top:20px"></div>
+<div class="dws"><div data-dw="t-dlim" data-t="Como achar os limiares e para que servem" data-c="var(--ink)"><p><b>VT1 (limiar aeróbio):</b> o VE/VO₂ para de cair e começa a subir, enquanto o VE/VCO₂ fica estável. O CO₂ extra do bicarbonato começa a aparecer. Coincide mais ou menos com o lactato saindo do repouso (~2 mmol/L).</p>
 <p><b>VT2 (compensação respiratória):</b> o VE/VCO₂ também sobe. A ventilação passa a compensar a acidose. Próximo de ~4 mmol/L e da máxima fase estável de lactato.</p>
 <p><b>Para que servem:</b> dividem as zonas de treino. Abaixo do VT1, volume fácil; entre VT1 e VT2, ritmo de prova longa; acima do VT2, intervalados curtos.</p><p><b>Por que evitar "limiar anaeróbio":</b> o lactato é produzido mesmo com oxigênio sobrando e serve de combustível para outros tecidos. O termo antigo passa a ideia errada de falta de O₂; a literatura atual prefere limiar de lactato, limiares ventilatórios e domínios de intensidade (Poole et al., 2021; Brooks, 2020).</p></div>
 </div>
@@ -573,14 +606,14 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 </div>
 <div class="field" style="max-width:420px"><label for="k-te">Duração do exercício <output id="k-o-te"></output></label><input type="range" id="k-te" min="3" max="12" step="1"></div>
 <div class="kpi" id="k-kpi"></div>
-<div class="two">
-<div><div class="chart"><h3>Consumo de O₂</h3><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">Déficit de O₂</span><span style="--c:var(--amber)">EPOC</span></div><div class="fig md"><svg id="k-c1"></svg></div></div>
-<div class="charts" style="margin-top:14px"><div class="chart"><h3>Frequência cardíaca</h3><div class="fig sm"><svg id="k-c2"></svg></div></div><div class="chart"><h3>Lactato</h3><div class="fig sm"><svg id="k-c3"></svg></div></div></div></div>
-<div><div class="card" id="k-dyn"></div>
-<div class="card" style="margin-top:16px"><h3>Por que existe o déficit e o EPOC</h3>
-<p>No início, a fosforilação oxidativa demora para acelerar. Enquanto isso o ATP vem da PCr, da glicólise e do O₂ guardado na mioglobina e no sangue: esse "empréstimo" é o déficit.</p>
+<div class="card" id="k-dyn"></div>
+<div class="dws">
+<div data-dw="k-d1" data-t="Consumo de O₂: déficit e EPOC" data-ex="k_vo2" data-open><div class="legend"><span>VO₂</span><span style="--c:var(--blue)">Déficit de O₂</span><span style="--c:var(--amber)">EPOC</span></div><div class="fig md"><svg id="k-c1"></svg></div></div>
+<div data-dw="k-d2" data-t="Frequência cardíaca" data-ex="k_fc"><div class="fig sm"><svg id="k-c2"></svg></div></div>
+<div data-dw="k-d3" data-t="Lactato" data-ex="k_lac"><div class="fig sm"><svg id="k-c3"></svg></div></div>
+<div data-dw="k-dpq" data-t="Por que existe o déficit e o EPOC" data-c="var(--ink)"><p>No início, a fosforilação oxidativa demora para acelerar. Enquanto isso o ATP vem da PCr, da glicólise e do O₂ guardado na mioglobina e no sangue: esse "empréstimo" é o déficit.</p>
 <p>Depois, o VO₂ fica acima do repouso. A fase rápida repõe PCr e O₂ da mioglobina e hemoglobina; a lenta cobre temperatura, catecolaminas, ventilação e trabalho cardíaco elevados. A remoção do lactato explica pouco do EPOC (Gaesser e Brooks, 1984; Børsheim e Bahr, 2003).</p>
-<p>A queda da FC no 1º minuto mede a reativação vagal; menos de 12 bpm após teste de esforço se associa a maior risco (Cole et al., 1999; meta-análise de Qiu et al., 2017).</p></div></div>
+<p>A queda da FC no 1º minuto mede a reativação vagal; menos de 12 bpm após teste de esforço se associa a maior risco (Cole et al., 1999; meta-análise de Qiu et al., 2017).</p></div>
 </div>
 </div></section></div>
 
@@ -593,7 +626,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <div class="chips" id="e-sports" style="margin:8px 0 6px"></div>
 <div class="ebar" id="e-bar"></div>
 <div class="eleg" id="e-leg"></div>
-<div class="fig md"><svg id="e-c1"></svg></div>
+<div class="dws"><div data-dw="e-d1" data-t="Os três sistemas pela duração" data-ex="e_sys" data-open><div class="fig md"><svg id="e-c1"></svg></div></div></div>
 <div id="e-txt"></div>
 </div>
 <div>
@@ -606,9 +639,8 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <p id="e-dep" style="margin:0 0 6px"></p>
 <div class="field"><label for="e-rest">Descanso <output id="e-o-rest"></output></label><input type="range" id="e-rest" min="0" max="300" step="5"></div>
 <p class="bignum" id="e-pcr"></p>
-<div class="fig md"><svg id="e-c2"></svg></div>
 <p id="e-pcrtxt"></p>
-<div class="legend"><span style="--c:var(--blue)">Este cenário</span><span class="la" style="--c:var(--mut)">Depois de um sprint de 6 s</span></div>
+<div class="dws"><div data-dw="e-d2" data-t="Curva de recuperação da PCr" data-ex="e_pcr" data-open><div class="legend"><span style="--c:var(--blue)">Este cenário</span><span class="la" style="--c:var(--mut)">Depois de um sprint de 6 s</span></div><div class="fig md"><svg id="e-c2"></svg></div></div></div>
 <p class="note">Tempos dos exemplos aproximados para atletas bem treinados. Recuperação calibrada em Bogdanis et al. (1995): após 30 s de sprint máximo, ~65% da PCr volta em 1,5 min e ~85% em 6 min.</p>
 </div>
 </div></section></div>
@@ -619,16 +651,14 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <p class="sub">Mexa no ambiente do sangue e veja a curva se deslocar. A tracejada é a curva normal; a faixa laranja mostra o O₂ entregue entre o sangue arterial e o venoso.</p>
 <div class="chips" id="h-pre"></div>
 <div class="two">
-<div><div class="kpi" id="h-kpi"></div><div class="fig" style="min-height:380px"><svg id="h-c1"></svg></div><div id="h-txt"></div></div>
+<div><div class="kpi" id="h-kpi"></div><div class="dws"><div data-dw="h-d1" data-t="Curva de dissociação" data-ex="h_curva" data-open><div class="fig" style="min-height:380px"><svg id="h-c1"></svg></div></div></div><div id="h-txt"></div></div>
 <div class="side">
 <div class="field"><label for="h-temp">Temperatura <output id="h-o-temp"></output></label><input type="range" id="h-temp" min="34" max="42" step="0.5"></div>
 <div class="field"><label for="h-ph">pH <output id="h-o-ph"></output></label><input type="range" id="h-ph" min="7.0" max="7.6" step="0.01"></div>
 <div class="field"><label for="h-pco2">PCO₂ <output id="h-o-pco2"></output></label><input type="range" id="h-pco2" min="20" max="80" step="1"></div>
 <div class="field"><label for="h-dpg">2,3-DPG <output id="h-o-dpg"></output></label><input type="range" id="h-dpg" min="3" max="8" step="0.1"></div>
 <div class="field"><label for="h-pa">PO₂ arterial <output id="h-o-pa"></output></label><input type="range" id="h-pa" min="25" max="110" step="1"></div>
-<div class="field"><label for="h-pv">PO₂ venosa <output id="h-o-pv"></output></label><input type="range" id="h-pv" min="10" max="50" step="1"></div>
-</div>
-</div>
+<div class="field"><label for="h-pv">PO₂ venosa <output id="h-o-pv"></output></label><input type="range" id="h-pv" min="10" max="50" step="1"></div></div></div>
 </div></section></div>
 
 <!-- ADAPTAÇÕES -->
@@ -641,7 +671,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <div class="field"><label for="a-w">Semanas de treino <output id="a-o-w"></output></label><input type="range" id="a-w" min="1" max="24" step="1"></div>
 <div class="field"><label for="a-d">Semanas parado depois <output id="a-o-d"></output></label><input type="range" id="a-d" min="0" max="12" step="1"></div>
 </div>
-<div class="fig" style="min-height:380px"><svg id="a-c1"></svg></div>
+<div class="dws"><div data-dw="a-d1" data-t="Adaptações semana a semana" data-ex="a_curva" data-open><div class="fig" style="min-height:380px"><svg id="a-c1"></svg></div></div></div>
 <div id="a-txt"></div>
 </div>
 <div class="sys" style="--c:var(--red)"><h3>Mudança em relação ao início</h3><div id="a-list"></div></div>
@@ -660,22 +690,14 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <div class="field"><label>Respiração</label><div class="seg" id="f-segVal"><button data-v="1">Com Valsalva</button><button data-v="0">Sem Valsalva</button></div></div>
 </div>
 <div class="kpi" id="f-kpi"></div>
-<div class="two">
-<div class="chart"><h3>Pressão arterial durante a série</h3><div class="legend"><span>Sistólica</span><span style="--c:var(--blue)">Diastólica</span></div><div class="fig" style="min-height:340px"><svg id="f-c1"></svg></div></div>
-<div>
-<h3>Unidades motoras recrutadas</h3>
-<div class="field"><label for="f-view">Ver repetição <output id="f-o-view"></output></label><input type="range" id="f-view" min="1" max="10" step="1"></div>
+<div class="dws">
+<div data-dw="f-d1" data-t="Pressão arterial durante a série" data-ex="f_pa" data-open><div class="legend"><span>Sistólica</span><span style="--c:var(--blue)">Diastólica</span></div><div class="fig" style="min-height:340px"><svg id="f-c1"></svg></div></div>
+<div data-dw="f-d2" data-t="Unidades motoras recrutadas" data-ex="f_mu"><div class="field"><label for="f-view">Ver repetição <output id="f-o-view"></output></label><input type="range" id="f-view" min="1" max="10" step="1"></div>
 <p id="f-mu-head" style="margin:4px 0 10px;font-size:15px"></p>
 <div class="mugrid" id="f-mu"></div>
-<div class="mulegend" id="f-mu-leg"></div>
-</div>
-</div>
-<div class="card mech has-fig" style="margin-top:20px" id="f-fig"></div>
-<div class="cards">
-<div class="card"><h3>Por que a pressão dispara</h3><p>No exercício de força a contração comprime as artérias do músculo e a resistência periférica sobe, ao contrário do aeróbio. Com a manobra de Valsalva a pressão dentro do tórax se soma à arterial: no leg press até a falha, ~320/250 mmHg em média (MacDougall et al., 1985). Ao soltar o ar, cai por alguns segundos.</p></div>
-<div class="card"><h3>Por que sobe ao longo da série</h3><p>A cada repetição o músculo fadiga: a mesma carga passa a exigir uma fração maior da força disponível. Mais esforço central e o metaborreflexo (metabólitos acumulados no músculo) elevam pressão e FC. Por isso as últimas repetições são as que mais sobem, mesmo com carga leve.</p></div>
-<div class="card"><h3>Recrutamento e hipertrofia</h3><p>Pelo princípio do tamanho (Henneman, 1957) entram primeiro as unidades tipo I; as tipo II só quando o esforço sobe. Com 30 a 40% de 1RM a 1ª repetição usa poucas, mas perto da falha quase todas entram. Por isso cargas leves até perto da falha geram hipertrofia parecida com cargas altas (Schoenfeld et al., 2017; Lopez et al., 2021). Teste mudando a repetição.</p></div>
-<div class="card"><h3>Na prática</h3><p>Para alunos hipertensos ou cardiopatas: expirar na fase concêntrica, evitar Valsalva, terminar a série com 2 ou 3 repetições em reserva e preferir cargas moderadas, com liberação médica. Repare como as repetições em reserva baixam o pico.</p></div>
+<div class="mulegend" id="f-mu-leg"></div></div>
+<div data-dw="f-dfig" data-t="Como funciona: unidade motora" data-c="var(--ink)"><div class="card mech has-fig" id="f-fig"></div></div>
+<div data-dw="f-dent" data-t="Entenda a série: pressão, fadiga e recrutamento" data-c="var(--ink)"><h4 style="margin:12px 0 4px">Por que a pressão dispara</h4><p>No exercício de força a contração comprime as artérias do músculo e a resistência periférica sobe, ao contrário do aeróbio. Com a manobra de Valsalva a pressão dentro do tórax se soma à arterial: no leg press até a falha, ~320/250 mmHg em média (MacDougall et al., 1985). Ao soltar o ar, cai por alguns segundos.</p><h4 style="margin:12px 0 4px">Por que sobe ao longo da série</h4><p>A cada repetição o músculo fadiga: a mesma carga passa a exigir uma fração maior da força disponível. Mais esforço central e o metaborreflexo (metabólitos acumulados no músculo) elevam pressão e FC. Por isso as últimas repetições são as que mais sobem, mesmo com carga leve.</p><h4 style="margin:12px 0 4px">Recrutamento e hipertrofia</h4><p>Pelo princípio do tamanho (Henneman, 1957) entram primeiro as unidades tipo I; as tipo II só quando o esforço sobe. Com 30 a 40% de 1RM a 1ª repetição usa poucas, mas perto da falha quase todas entram. Por isso cargas leves até perto da falha geram hipertrofia parecida com cargas altas (Schoenfeld et al., 2017; Lopez et al., 2021). Teste mudando a repetição.</p><h4 style="margin:12px 0 4px">Na prática</h4><p>Para alunos hipertensos ou cardiopatas: expirar na fase concêntrica, evitar Valsalva, terminar a série com 2 ou 3 repetições em reserva e preferir cargas moderadas, com liberação médica. Repare como as repetições em reserva baixam o pico.</p></div>
 </div>
 </div></section>
 <section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
@@ -687,8 +709,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <div class="field"><label for="f-w">Semanas de treino <output id="f-o-w"></output></label><input type="range" id="f-w" min="1" max="24" step="1"></div>
 <div class="field"><label for="f-d">Semanas parado depois <output id="f-o-d"></output></label><input type="range" id="f-d" min="0" max="12" step="1"></div>
 </div>
-<div class="legend"><span style="--c:var(--blue)">Adaptações neurais</span><span>Hipertrofia</span></div>
-<div class="fig md"><svg id="f-c2"></svg></div>
+<div class="dws"><div data-dw="f-d3" data-t="Neural × hipertrofia" data-ex="f_ganho" data-open><div class="legend"><span style="--c:var(--blue)">Adaptações neurais</span><span>Hipertrofia</span></div><div class="fig md"><svg id="f-c2"></svg></div></div></div>
 </div>
 <div><div class="kpi" id="f-kpi2"></div>
 <p>Nas primeiras semanas quase todo o ganho de força é <b>neural</b>: mais unidades motoras ativadas, maior frequência de disparo, melhor coordenação e menos coativação dos antagonistas. A <b>hipertrofia</b> passa a pesar depois de ~6 a 8 semanas (Moritani e deVries, 1979; Sale, 1988; Škarabot et al., 2021). O "inchaço" das 2 a 3 primeiras semanas é em boa parte edema do dano muscular (Damas et al., 2016).</p>
@@ -801,6 +822,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none}
 <footer class="band"><div class="wrap">Fisiologia em Ação · modelo didático com valores aproximados, para estudo de fisiologia do exercício.</div></footer>
 
 <script src="js/core.js"></script>
+<script src="js/explica.js"></script>
 <script src="js/figs.js"></script>
 <script src="js/model.js"></script>
 <script src="js/sim.js"></script>

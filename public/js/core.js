@@ -61,4 +61,30 @@ FA.observe = (el, fn) => { const ro = new ResizeObserver(() => fn()); ro.observe
 /* liga um range a output e trilho preenchido */
 FA.rangeFill = el => el.style.setProperty('--f', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
 FA.seg = (el, val) => el.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(val))));
+
+/* gaveta (abre e fecha) com gráfico e explicação em abas
+   o = {id, t, ico, val, leg:[[nome,cor]], open, adv, body, ex:{o,p,l,a}}  (a = true: aba "Agora" preenchida depois) */
+FA.EXT = [['o', 'O que é'], ['p', 'Por que olhar'], ['l', 'Como ler'], ['a', 'Agora']];
+FA.exHTML = (id, ex) => {
+  const tabs = FA.EXT.filter(([k]) => ex[k]);
+  return `<div class="ex" data-ex="${id}"><div class="ex-tabs" role="tablist">${tabs.map(([k, n], i) => `<button role="tab" data-k="${k}" aria-selected="${i === 0}">${n}</button>`).join('')}</div>
+    ${tabs.map(([k], i) => `<div class="ex-p" data-k="${k}" ${i ? 'hidden' : ''}${k === 'a' && ex.a === true ? ` id="${id}-now"` : ''}>${ex[k] === true ? '' : ex[k]}</div>`).join('')}</div>`;
+};
+FA.dw = o => `<details class="dw${o.adv ? ' adv' : ''}${o.ex ? ' has-ex' : ''}" id="${o.id}"${o.open ? ' open' : ''} style="${o.c ? '--c:' + o.c : ''}">
+  <summary><span class="dw-t">${o.t}</span><span class="dw-v" id="${o.id}-val">${o.val || ''}</span><span class="dw-ch" aria-hidden="true"></span></summary>
+  <div class="dw-b">${o.body != null ? `<div class="dw-main">${o.leg ? `<div class="legend">${o.leg.map(([n, col, cls]) => `<span${cls ? ` class="${cls}"` : ''} style="--c:${col}">${n}</span>`).join('')}</div>` : ''}${o.body}</div>` : ''}${o.ex ? FA.exHTML(o.id, o.ex) : ''}</div></details>`;
+FA.dwSet = (id, val, now) => { const v = document.getElementById(id + '-val'); if (v && val != null) v.innerHTML = val; const n = document.getElementById(id + '-now'); if (n && now != null) n.innerHTML = now; };
+document.addEventListener('click', e => {
+  const b = e.target.closest('.ex-tabs button'); if (!b) return;
+  const box = b.closest('.ex');
+  box.querySelectorAll('.ex-tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  box.querySelectorAll('.ex-p').forEach(p => p.hidden = p.dataset.k !== b.dataset.k);
+});
+/* transforma blocos já escritos no HTML em gavetas: <div data-dw="id" data-t="título" data-open data-ex='{"o":..}'> conteúdo </div> */
+FA.dwUpgrade = root => (root || document).querySelectorAll('[data-dw]').forEach(el => {
+  const ex = el.dataset.ex ? FA.EXP[el.dataset.ex] : null, wrap = document.createElement('div');
+  wrap.innerHTML = FA.dw({id: el.dataset.dw, t: el.dataset.t, open: el.hasAttribute('data-open'), adv: el.classList.contains('adv'), body: '', ex, c: el.dataset.c});
+  const d = wrap.firstElementChild; d.querySelector('.dw-main').append(...el.childNodes); el.replaceWith(d);
+});
+FA.EXP = FA.EXP || {};
 }

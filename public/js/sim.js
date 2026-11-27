@@ -78,7 +78,13 @@ function renderRead() {
 }
 function renderSys() {
   const vis = k => !FA.simple || FA.SIMPLEV.has(k);
-  $('#systems').innerHTML = FA.SYS.filter(s => s.v.some(vis)).map(s => `<section class="sys" style="--c:${s.c}"><h3>${s.n}</h3>${s.v.filter(vis).map(k => `<button class="row${S.sel === k ? ' on' : ''}" data-k="${k}"><span>${V[k][0]}</span><span class="v">${FA.fmt(k, m[k])}${FA.HORM.has(k) ? '' : ` <small>${V[k][1]}</small>`}</span><span class="d">${dl(k)}</span>${FA.HORM.has(k) ? `<span class="bar"><i style="width:${m[k]}%"></i></span>` : ''}</button>`).join('')}</section>`).join('');
+  const sysl = FA.SYS.filter(s => s.v.some(vis)), skey = sysl.map(s => s.n).join('|'), box = $('#systems');
+  if (box.dataset.k !== skey) { box.dataset.k = skey; box.innerHTML = sysl.map((s, i) => FA.dw({id: 'sys-' + i, t: s.n, c: s.c, open: i === 0, body: `<section class="sys" style="--c:${s.c}" id="sys-${i}-rows"></section>`})).join(''); }
+  sysl.forEach((s, i) => {
+    const ks = s.v.filter(vis), up = ks.filter(k => /↑/.test(dl(k))).length, dn = ks.filter(k => /↓/.test(dl(k))).length;
+    FA.dwSet('sys-' + i, `${ks.length} variáveis · <b>${up}</b> ${up === 1 ? 'subiu' : 'subiram'} · <b>${dn}</b> ${dn === 1 ? 'caiu' : 'caíram'}`);
+    $('#sys-' + i + '-rows').innerHTML = ks.map(k => `<button class="row${S.sel === k ? ' on' : ''}" data-k="${k}"><span>${V[k][0]}</span><span class="v">${FA.fmt(k, m[k])}${FA.HORM.has(k) ? '' : ` <small>${V[k][1]}</small>`}</span><span class="d">${dl(k)}</span>${FA.HORM.has(k) ? `<span class="bar"><i style="width:${m[k]}%"></i></span>` : ''}</button>`).join('');
+  });
 }
 function renderWhy() {
   const k = S.sel, s = FA.sysOf(k), t = FA.why(k, m, S.P), u = FA.unit(k);
